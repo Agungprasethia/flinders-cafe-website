@@ -1,0 +1,118 @@
+/* =====================
+   PromoDetailModal.css
+   ===================== */
+
+.pdm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.pdm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(37, 51, 48, 0.85); /* Dark greenish overlay */
+  backdrop-filter: blur(4px);
+}
+
+.pdm-content {
+  position: relative;
+  z-index: 10000;
+  background: #ffffff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 480px;
+  padding: 28px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.pdm-content::-webkit-scrollbar {
+  width: 6px;
+}
+.pdm-content::-webkit-scrollbar-thumb {
+  background-color: #39746c;
+  border-radius: 10px;
+}
+
+.pdm-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #f1f1f1;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  color: #333;
+}
+
+.pdm-close-btn:hover {
+  background: #e1e1e1;
+}
+
+.pdm-image-wrap {
+  border-radius: 16px;
+  overflow: hidden;
+  height: 250px;
+  margin-bottom: 24px;
+  margin-top: 10px;
+  border: 3px solid #39746c;
+}
+
+.pdm-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pdm-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pdm-title {
+  font-family: 'Georgia', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1d3b35;
+  margin: 0;
+}
+
+.pdm-price {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #ba8f65;
+  margin: 0;
+}
+
+.pdm-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: #555;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.pdm-items {
+  list-style-type: disc;
+  padding-left: 20px;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: #444;
+  line-height: 1.6;
+}
