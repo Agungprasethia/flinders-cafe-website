@@ -1,7 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./MenuDetailModal.css";
 
-export default function MenuDetailModal({ menu, lang = "en", onClose }) {
+export default function MenuDetailModal({ menu, lang = "en", onClose, onCartClick }) {
+  const [quantity, setQuantity] = useState(1);
+
+  const increment = () => setQuantity((q) => q + 1);
+  const decrement = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+
   useEffect(() => {
     // Lock body scroll when modal is open
     document.body.classList.add("modal-open");
@@ -65,8 +70,6 @@ export default function MenuDetailModal({ menu, lang = "en", onClose }) {
           />
         </div>
 
-        <div className="mdm-divider" />
-
         <div className="mdm-info">
           <div className="mdm-header">
             <div>
@@ -77,6 +80,21 @@ export default function MenuDetailModal({ menu, lang = "en", onClose }) {
           </div>
 
           <p className="mdm-desc">{description}</p>
+
+          <div className="mdm-actions">
+            <div className="mdm-quantity">
+              <button className="mdm-qty-btn" onClick={decrement}>
+                -
+              </button>
+              <span className="mdm-qty-value">{quantity}</span>
+              <button className="mdm-qty-btn" onClick={increment}>
+                +
+              </button>
+            </div>
+            <button className="mdm-cart-btn" onClick={onCartClick}>
+              + Keranjang
+            </button>
+          </div>
         </div>
       </div>
     </div>

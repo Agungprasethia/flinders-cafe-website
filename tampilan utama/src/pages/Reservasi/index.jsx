@@ -46,7 +46,7 @@ function StepIndicator({ currentStep }) {
   );
 }
 
-export default function Reservasi({ isOpen, onClose }) {
+export default function ReservasiSection() {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -60,8 +60,7 @@ export default function Reservasi({ isOpen, onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleClose = () => {
-    onClose();
+  const resetForm = () => {
     setTimeout(() => {
       setStep(1);
       setSelectedDate(null);
@@ -81,20 +80,13 @@ export default function Reservasi({ isOpen, onClose }) {
     }, 1500);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="reservasi-overlay" onClick={handleClose}>
-      <div className="reservasi-modal" onClick={(e) => e.stopPropagation()}>
-        <img src={IMAGES.reservasiBg} alt="" className="reservasi-modal__bg" />
-        <div className="reservasi-modal__overlay" />
+    <section id="reservasi" className="reservasi-section-container">
+      <img src={IMAGES.reservasiBg} alt="" className="reservasi-section__bg" />
+      <div className="reservasi-section__overlay" />
 
-        <div className="reservasi-card">
-          <button className="reservasi-card__close" onClick={handleClose}>
-            ✕
-          </button>
-
-          <div className="reservasi-card__header">
+      <div className="reservasi-card">
+        <div className="reservasi-card__header">
             <h2 className="reservasi-card__title">Reservasi Meja</h2>
             <p className="reservasi-card__subtitle">
               reservasi meja anda dan nikmati pengalaman terbaik bersama kami.
@@ -140,10 +132,10 @@ export default function Reservasi({ isOpen, onClose }) {
               selectedTime={selectedTime}
               guestCount={guestCount}
               formData={formData}
+              onReset={resetForm}
             />
           )}
-        </div>
       </div>
-    </div>
+    </section>
   );
 }

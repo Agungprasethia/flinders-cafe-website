@@ -4,12 +4,13 @@ import Navbar from "../../components/common/Navbar";
 import HeroSection from "./sections/HeroSection";
 import PromoSection from "./sections/PromoSection";
 import MenuSection from "./sections/MenuSection";
+import ReservasiSection from "../Reservasi";
 import FlindersGallery from "../../components/ui/FlindersGallery";
 import AboutSection from "./sections/AboutSection";
 import DetailMenu from "../../components/ui/DetailMenu";
 import MenuDetailModal from "../../components/ui/MenuDetailModal";
 
-export default function Beranda({ onReservasiClick }) {
+export default function Beranda({ onCartClick }) {
   const [showFullMenu, setShowFullMenu] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState(null);
   const [lang, setLang] = useState("en");
@@ -18,21 +19,28 @@ export default function Beranda({ onReservasiClick }) {
     setLang((prev) => (prev === "en" ? "id" : "en"));
   };
 
+  const handleReservasiClick = () => {
+    document.getElementById('reservasi')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="beranda">
       <Navbar
         lang={lang}
-        onReservasiClick={onReservasiClick}
+        onReservasiClick={handleReservasiClick}
         onMenuClick={() => setShowFullMenu(true)}
+        onCartClick={onCartClick}
       />
       <HeroSection
         lang={lang}
         toggleLang={toggleLang}
-        onReservasiClick={onReservasiClick}
+        onReservasiClick={handleReservasiClick}
         onMenuClick={() => setShowFullMenu(true)}
+        onCartClick={onCartClick}
       />
       <PromoSection lang={lang} />
       <MenuSection lang={lang} onMenuSelect={(item) => setSelectedMenu(item)} />
+      <ReservasiSection />
       <FlindersGallery lang={lang} />
       <AboutSection lang={lang} />
 
@@ -45,6 +53,10 @@ export default function Beranda({ onReservasiClick }) {
           lang={lang}
           menu={selectedMenu}
           onClose={() => setSelectedMenu(null)}
+          onCartClick={() => {
+            setSelectedMenu(null);
+            onCartClick();
+          }}
         />
       )}
     </div>

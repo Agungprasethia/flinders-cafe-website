@@ -90,17 +90,10 @@ body.modal-open {
   display: block;
 }
 
-/* Teal Divider Bar */
-.mdm-divider {
-  height: 10px;
-  background: rgba(57, 116, 108, 0.6);
-  border-radius: 28px;
-  margin: 20px 0 16px;
-}
-
 /* Info Section */
 .mdm-info {
   padding: 0 4px;
+  margin-top: 20px;
 }
 
 .mdm-header {
@@ -145,11 +138,73 @@ body.modal-open {
 
 .mdm-desc {
   font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   color: #444444;
-  line-height: 1.65;
+  line-height: 1.5;
   margin: 0;
   letter-spacing: 0.1px;
+}
+
+/* Actions Section */
+.mdm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.mdm-quantity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mdm-qty-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: #39746c;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mdm-qty-btn:hover {
+  background: #1d3b35;
+}
+
+.mdm-qty-value {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #000;
+  min-width: 12px;
+  text-align: center;
+}
+
+.mdm-cart-btn {
+  background: #39746c;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 24px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.mdm-cart-btn:hover {
+  background: #1d3b35;
+  transform: translateY(-2px);
 }
 
 /* === RESPONSIVE === */

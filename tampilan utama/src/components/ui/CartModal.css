@@ -1,0 +1,347 @@
+/* =========================================
+   CART MODAL CSS (Matching Figma Design)
+   ========================================= */
+
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.cart-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  filter: blur(2px);
+  transform: scale(1.05);
+}
+
+.cart-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: #39746c;
+  opacity: 0.85;
+  mix-blend-mode: multiply;
+}
+
+.cart-modal {
+  position: relative;
+  z-index: 10;
+  background: #f2eee8; /* Light warm background for the card body */
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 90vh;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cart-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #888;
+  cursor: pointer;
+  z-index: 100;
+}
+
+.cart-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Scrollbar styling */
+.cart-content::-webkit-scrollbar {
+  width: 6px;
+}
+.cart-content::-webkit-scrollbar-thumb {
+  background: #39746c;
+  border-radius: 10px;
+}
+
+.cart-title {
+  background: #ffffff;
+  margin: 0;
+  padding: 24px 0 20px;
+  text-align: center;
+  font-family: 'Georgia', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.cart-header-with-back {
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 20px 24px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  position: relative;
+}
+
+.cart-header-with-back .cart-title {
+  flex: 1;
+  padding: 0;
+  text-align: center;
+}
+
+.cart-back-btn {
+  background: transparent;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  cursor: pointer;
+  position: absolute;
+  left: 24px;
+}
+
+/* === ITEMS === */
+.cart-items {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #ebe6df; /* slightly darker warm gray like in design */
+  flex: 1;
+}
+
+.cart-item {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cart-item__img-wrap {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #39746c;
+  flex-shrink: 0;
+}
+
+.cart-item__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-item__info {
+  flex: 1;
+}
+
+.cart-item__name {
+  font-family: 'Georgia', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #39746c;
+  margin: 0 0 4px;
+  text-transform: lowercase;
+}
+
+.cart-item__price {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ba8f65;
+  margin: 0;
+}
+
+.cart-item__qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cart-qty-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: #39746c;
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.cart-qty-val {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: #39746c;
+  min-width: 12px;
+  text-align: center;
+}
+
+.cart-item__qty-readonly {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #39746c;
+  padding-right: 12px;
+}
+
+/* === FORM (STEP 2) === */
+.cart-form {
+  background: #ebe6df;
+  padding: 16px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cart-form__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cart-form__row label {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  width: 50px;
+}
+
+.cart-form__row input {
+  background: #e0dcd5;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  flex: 1;
+  outline: none;
+}
+.cart-form__row input:focus {
+  background: #d6d1c9;
+}
+
+/* === FOOTER === */
+.cart-footer {
+  background: #ffffff;
+  padding: 24px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cart-footer--konfirmasi {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 20px;
+}
+
+.cart-footer__totals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cart-footer__row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.cart-footer__label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1a1a1a;
+  width: 90px;
+}
+
+.cart-footer__value-small {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #39746c;
+}
+
+.cart-footer__label-total {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  width: 90px;
+}
+
+.cart-footer__value-total {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #39746c;
+}
+
+.cart-btn-checkout {
+  background: #39746c;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 24px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cart-btn-checkout:hover {
+  background: #1d3b35;
+}
+
+.cart-btn-wa {
+  background: #00b956;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cart-btn-wa:hover:not(:disabled) {
+  background: #009d49;
+}
+.cart-btn-wa:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}

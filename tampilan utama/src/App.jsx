@@ -1,17 +1,14 @@
 import { useState } from "react";
 import Beranda from "./pages/Beranda";
-import Reservasi from "./pages/Reservasi";
+import CartModal from "./components/ui/CartModal";
 
 export default function App() {
-  const [showReservasi, setShowReservasi] = useState(false);
+  const [showCart, setShowCart] = useState(false);
 
   return (
     <>
-      <Beranda onReservasiClick={() => setShowReservasi(true)} />
-      <Reservasi
-        isOpen={showReservasi}
-        onClose={() => setShowReservasi(false)}
-      />
+      <Beranda onCartClick={() => setShowCart(true)} />
+      <CartModal isOpen={showCart} onClose={() => setShowCart(false)} />
     </>
   );
 }
