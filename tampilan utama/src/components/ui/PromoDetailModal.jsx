@@ -15,11 +15,10 @@ export default function PromoDetailModal({ promo, onClose }) {
       <div className="pdm-backdrop" onClick={onClose} />
       
       <div className="pdm-content">
-        <button className="pdm-close-btn" onClick={onClose}>
-          ✕
-        </button>
-
         <div className="pdm-image-wrap">
+          <button className="pdm-close-btn" onClick={onClose}>
+            &lt;
+          </button>
           <img
             src={promo.image}
             alt={promo.title}
@@ -28,15 +27,14 @@ export default function PromoDetailModal({ promo, onClose }) {
         </div>
 
         <div className="pdm-info">
-          <h2 className="pdm-title">{promo.title}</h2>
-          <p className="pdm-price">{promo.price}</p>
+          <h2 className="pdm-title">{promo.title.replace('\n', ' ')}</h2>
           <p className="pdm-desc">{promo.description}</p>
           
-          <ul className="pdm-items">
-            {promo.items && promo.items.map((item, i) => (
-              <li key={i}>{item}</li>
-            ))}
-          </ul>
+          <div className="pdm-footer" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+            <button className="pdm-action-btn" style={{ background: '#39746c', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '24px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}>
+              keranjang
+            </button>
+          </div>
         </div>
       </div>
     </div>

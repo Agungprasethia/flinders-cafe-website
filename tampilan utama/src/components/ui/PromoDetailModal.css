@@ -43,19 +43,22 @@
 .pdm-close-btn {
   position: absolute;
   top: 16px;
-  right: 16px;
-  background: #f1f1f1;
+  left: 16px;
+  background: white;
   border: none;
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: bold;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
   color: #333;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .pdm-close-btn:hover {
@@ -63,12 +66,11 @@
 }
 
 .pdm-image-wrap {
+  position: relative;
   border-radius: 16px;
   overflow: hidden;
-  height: 250px;
+  height: 380px;
   margin-bottom: 24px;
-  margin-top: 10px;
-  border: 3px solid #39746c;
 }
 
 .pdm-image {

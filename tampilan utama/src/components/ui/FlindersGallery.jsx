@@ -46,8 +46,8 @@ export default function FlindersGallery({ lang = "en" }) {
         </div>
 
         {/* Elfsight Instagram Feed */}
-        <div 
-          className="elfsight-app-416c7d72-c8c5-4fa8-9802-39abd071fe9b" 
+        <div
+          className="elfsight-app-416c7d72-c8c5-4fa8-9802-39abd071fe9b"
           data-elfsight-app-lazy
         ></div>
       </div>

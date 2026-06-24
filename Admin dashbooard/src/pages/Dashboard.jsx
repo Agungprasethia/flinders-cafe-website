@@ -719,14 +719,100 @@ const TambahMenuModal = ({ isOpen, onClose }) => {
 };
 
 // ==========================================
+// MODAL: MENU SELECTION
+// ==========================================
+const MenuSelectionModal = ({ isOpen, onClose, selectedMenus, onSave }) => {
+  const [activeCategory, setActiveCategory] = useState("all menu");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [localSelected, setLocalSelected] = useState(selectedMenus || []);
+
+  const dummyMenus = [
+    { id: 1, name: 'creamy butterscoot latte', price: '55k', category: 'drink' },
+    { id: 2, name: 'chicken parmigiana', price: '65k', category: 'food' },
+    { id: 3, name: 'ice latte', price: '55k', category: 'drink' },
+    { id: 4, name: 'mie goreng spesial', price: '55k', category: 'food' },
+  ];
+
+  const categories = ["all menu", "best seller", "drink", "food", "dessert & snack"];
+
+  const toggleSelection = (menu) => {
+    if (localSelected.find(m => m.id === menu.id)) {
+      setLocalSelected(localSelected.filter(m => m.id !== menu.id));
+    } else {
+      setLocalSelected([...localSelected, menu]);
+    }
+  };
+
+  const handleSave = () => {
+    onSave(localSelected);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-8 animate-modalIn">
+        <h2 className="text-2xl font-bold text-[#2E6A67] text-center mb-6">Tambah Menu</h2>
+        
+        {/* Search */}
+        <input 
+          type="text" 
+          placeholder="Cari menu..." 
+          className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm mb-6 focus:outline-none focus:border-[#2E6A67]"
+        />
+
+        {/* Categories */}
+        <div className="flex gap-2 mb-6 flex-wrap justify-center">
+          {categories.map(cat => (
+            <button 
+              key={cat}
+              className={`px-4 py-1.5 text-xs rounded-full border font-semibold transition-colors ${activeCategory === cat ? 'bg-[#e8d8b4] text-gray-800 border-[#e8d8b4]' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+              onClick={() => setActiveCategory(cat)}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Grid */}
+        <div className="grid grid-cols-2 gap-4 max-h-[40vh] overflow-y-auto pr-2">
+          {dummyMenus.map(menu => {
+            const isSelected = localSelected.find(m => m.id === menu.id);
+            return (
+              <div 
+                key={menu.id} 
+                onClick={() => toggleSelection(menu)}
+                className={`border rounded-lg p-4 flex justify-between items-center cursor-pointer transition-colors ${isSelected ? 'bg-[#2E6A67] text-white border-[#2E6A67]' : 'bg-white border-gray-200 text-gray-700 hover:border-[#2E6A67]'}`}
+              >
+                <span className="font-medium text-sm">{menu.name}</span>
+                <span className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-[#ba8f65]'}`}>{menu.price}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex justify-end gap-6 mt-8">
+          <button onClick={onClose} className="text-[#2E6A67] font-bold text-sm hover:underline">Batal</button>
+          <button onClick={handleSave} className="text-[#2E6A67] font-bold text-sm hover:underline">Simpan</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
 // MODAL: TAMBAH PROMO
 // ==========================================
 const TambahPromoModal = ({ isOpen, onClose }) => {
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
-    nama: '', kategori: '', harga: '', deskripsi: '', tanggalMulai: '', tanggalAkhir: ''
+    nama: '', diskon: '', durasi: '', deskripsi: ''
   });
   const [previewImage, setPreviewImage] = useState(null);
+  const [selectedMenus, setSelectedMenus] = useState([]);
+  const [showMenuSelection, setShowMenuSelection] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -744,164 +830,125 @@ const TambahPromoModal = ({ isOpen, onClose }) => {
   };
 
   const handleCancel = () => {
-    setFormData({ nama: '', kategori: '', harga: '', deskripsi: '', tanggalMulai: '', tanggalAkhir: '' });
+    setFormData({ nama: '', diskon: '', durasi: '', deskripsi: '' });
     setPreviewImage(null);
+    setSelectedMenus([]);
     onClose();
+  };
+
+  const removeMenu = (id) => {
+    setSelectedMenus(selectedMenus.filter(m => m.id !== id));
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCancel} />
       
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 animate-modalIn max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between px-8 pt-7 pb-2 sticky top-0 bg-white rounded-t-2xl z-10">
-          <h2 className="text-xl font-bold text-[#2E6A67]">Tambah Promo</h2>
-          <button
-            data-testid="btn-close-modal-promo"
-            onClick={handleCancel}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
-          >
-            <X size={20} />
-          </button>
-        </div>
+      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 animate-modalIn max-h-[90vh] overflow-y-auto">
+        <div className="px-10 py-8">
+          {/* Header */}
+          <h2 className="text-2xl font-bold text-[#2E6A67] text-center mb-8">Detail Promo</h2>
 
-        {/* Body */}
-        <div className="px-8 py-5 space-y-5">
-          {/* Nama Promo */}
-          <div className="flex items-center gap-6">
-            <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Nama Promo</label>
-            <input
-              data-testid="input-nama-promo"
-              type="text"
-              name="nama"
-              value={formData.nama}
-              onChange={handleChange}
-              className="flex-1 bg-gray-100 rounded-lg px-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-[#2E6A67] focus:ring-1 focus:ring-[#2E6A67]/20 transition-all"
-              placeholder="Masukkan nama promo"
-            />
-          </div>
-
-          {/* Kategori */}
-          <div className="flex items-center gap-6">
-            <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Kategori</label>
-            <select
-              data-testid="select-kategori-promo"
-              name="kategori"
-              value={formData.kategori}
-              onChange={handleChange}
-              className="flex-1 bg-gray-100 rounded-lg px-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-[#2E6A67] focus:ring-1 focus:ring-[#2E6A67]/20 transition-all appearance-none cursor-pointer"
-            >
-              <option value="">Pilih kategori</option>
-              <option value="diskon">Diskon</option>
-              <option value="bundling">Bundling</option>
-              <option value="spesial">Spesial</option>
-            </select>
-          </div>
-
-          {/* Harga */}
-          <div className="flex items-center gap-6">
-            <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Harga</label>
-            <input
-              data-testid="input-harga-promo"
-              type="text"
-              name="harga"
-              value={formData.harga}
-              onChange={handleChange}
-              className="w-44 bg-gray-100 rounded-lg px-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-[#2E6A67] focus:ring-1 focus:ring-[#2E6A67]/20 transition-all"
-              placeholder="Contoh: 50.000"
-            />
-          </div>
-
-          {/* Tanggal Promo */}
-          <div className="flex items-center gap-6">
-            <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Periode</label>
-            <div className="flex-1 flex items-center gap-2">
+          {/* Body */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-6">
+              <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Nama Promo</label>
               <input
-                data-testid="input-tanggal-mulai-promo"
-                type="date"
-                name="tanggalMulai"
-                value={formData.tanggalMulai}
-                onChange={handleChange}
-                className="flex-1 bg-gray-100 rounded-lg px-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-[#2E6A67] focus:ring-1 focus:ring-[#2E6A67]/20 transition-all"
-              />
-              <span className="text-gray-400 text-sm">—</span>
-              <input
-                data-testid="input-tanggal-akhir-promo"
-                type="date"
-                name="tanggalAkhir"
-                value={formData.tanggalAkhir}
-                onChange={handleChange}
-                className="flex-1 bg-gray-100 rounded-lg px-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-[#2E6A67] focus:ring-1 focus:ring-[#2E6A67]/20 transition-all"
+                type="text" name="nama" value={formData.nama} onChange={handleChange}
+                className="flex-1 bg-gray-100 rounded-md px-4 py-2 border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20"
               />
             </div>
-          </div>
 
-          {/* Deskripsi */}
-          <div className="flex items-start gap-6">
-            <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0 pt-2">Deskripsi</label>
-            <textarea
-              data-testid="textarea-deskripsi-promo"
-              name="deskripsi"
-              value={formData.deskripsi}
-              onChange={handleChange}
-              rows={3}
-              className="flex-1 bg-gray-100 rounded-lg px-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-[#2E6A67] focus:ring-1 focus:ring-[#2E6A67]/20 transition-all resize-none"
-              placeholder="Deskripsi promo"
-            />
-          </div>
+            <div className="flex items-center gap-6">
+              <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Diskon</label>
+              <input
+                type="text" name="diskon" value={formData.diskon} onChange={handleChange}
+                className="w-48 bg-gray-100 rounded-md px-4 py-2 border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20"
+              />
+            </div>
 
-          {/* Media Gambar */}
-          <div>
-            <label className="text-sm font-bold text-[#2E6A67] block mb-3">Media Gambar</label>
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#2E6A67] hover:bg-[#2E6A67]/5 transition-all group"
-            >
-              {previewImage ? (
-                <img src={previewImage} alt="Preview" className="w-full h-32 object-cover rounded-lg" />
-              ) : (
-                <>
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-[#2E6A67]/10 transition-colors">
-                    <Image size={24} className="text-gray-400 group-hover:text-[#2E6A67] transition-colors" />
+            <div className="flex items-center gap-6">
+              <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Durasi Promo</label>
+              <input
+                type="text" name="durasi" value={formData.durasi} onChange={handleChange}
+                className="w-48 bg-gray-100 rounded-md px-4 py-2 border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20"
+              />
+            </div>
+
+            <div className="flex items-start gap-6">
+              <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0 pt-2">Deskripsi</label>
+              <textarea
+                name="deskripsi" value={formData.deskripsi} onChange={handleChange} rows={3}
+                className="flex-1 bg-gray-100 rounded-md px-4 py-2 border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20 resize-none"
+              />
+            </div>
+
+            <div className="flex items-start gap-6">
+              <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0 pt-2">Poster Promo</label>
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1 bg-gray-100 rounded-md h-12 flex items-center px-4 cursor-pointer hover:bg-gray-200 overflow-hidden"
+              >
+                {previewImage ? <img src={previewImage} className="h-full object-cover" /> : <span className="text-gray-400 text-xs">Klik untuk upload...</span>}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-start gap-6">
+              <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0 pt-2">Menu Promo</label>
+              <div className="flex-1 flex flex-wrap gap-2 items-start">
+                {selectedMenus.map(menu => (
+                  <div key={menu.id} className="bg-gray-100 rounded-md px-3 py-1.5 flex items-center gap-2 text-xs font-medium text-gray-700">
+                    {menu.name}
+                    <button onClick={() => removeMenu(menu.id)} className="text-red-500 hover:text-red-700 rounded-full p-0.5">
+                      <X size={12} strokeWidth={3} />
+                    </button>
                   </div>
-                  <p className="text-xs text-gray-400 group-hover:text-[#2E6A67] transition-colors">Klik untuk upload banner promo</p>
-                </>
-              )}
-              <input
-                ref={fileInputRef}
-                data-testid="input-gambar-promo"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
+                ))}
+                {selectedMenus.length < 4 && (
+                  <div className="bg-gray-100 rounded-md px-4 py-1.5 min-w-[100px]"></div>
+                )}
+                {selectedMenus.length < 3 && (
+                  <div className="bg-gray-100 rounded-md px-4 py-1.5 min-w-[100px]"></div>
+                )}
+                <div className="w-full mt-2">
+                  <button 
+                    onClick={() => setShowMenuSelection(true)}
+                    className="w-8 h-8 bg-[#2E6A67] text-white rounded flex items-center justify-center hover:bg-[#245552] transition-colors"
+                  >
+                    <Plus size={18} strokeWidth={3} />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="flex justify-end gap-4 px-8 pb-7 pt-3 sticky bottom-0 bg-white rounded-b-2xl">
-          <button
-            data-testid="btn-batal-promo"
-            onClick={handleCancel}
-            className="px-8 py-2.5 text-[#2E6A67] font-semibold rounded-lg hover:bg-gray-100 transition-all text-sm"
-          >
-            Batal
-          </button>
-          <button
-            data-testid="btn-simpan-promo"
-            onClick={handleSubmit}
-            className="px-8 py-2.5 bg-[#2E6A67] text-white font-semibold rounded-lg hover:bg-[#245552] transition-all text-sm shadow-md hover:shadow-lg"
-          >
-            Simpan
-          </button>
+          {/* Footer */}
+          <div className="flex justify-end gap-8 mt-10">
+            <button onClick={handleCancel} className="text-[#2E6A67] font-bold text-sm hover:underline">
+              Batal
+            </button>
+            <button onClick={handleSubmit} className="text-[#2E6A67] font-bold text-sm hover:underline">
+              Simpan
+            </button>
+          </div>
         </div>
       </div>
+
+      <MenuSelectionModal 
+        isOpen={showMenuSelection} 
+        onClose={() => setShowMenuSelection(false)} 
+        selectedMenus={selectedMenus}
+        onSave={(menus) => setSelectedMenus(menus)}
+      />
     </div>
   );
 };

@@ -2,7 +2,6 @@ import { useState } from "react";
 import "./Beranda.css";
 import Navbar from "../../components/common/Navbar";
 import HeroSection from "./sections/HeroSection";
-import PromoSection from "./sections/PromoSection";
 import MenuSection from "./sections/MenuSection";
 import ReservasiSection from "../Reservasi";
 import FlindersGallery from "../../components/ui/FlindersGallery";
@@ -38,7 +37,6 @@ export default function Beranda({ onCartClick }) {
         onMenuClick={() => setShowFullMenu(true)}
         onCartClick={onCartClick}
       />
-      <PromoSection lang={lang} />
       <MenuSection lang={lang} onMenuSelect={(item) => setSelectedMenu(item)} />
       <ReservasiSection />
       <FlindersGallery lang={lang} />
