@@ -34,12 +34,12 @@ export default function AboutSection({ lang = "en" }) {
         </div>
 
         {/* MAP SECTION */}
-        <div id="map" className="about__map" style={{ width: '100%', maxWidth: '800px', margin: '20px auto 40px' }}>
+        <div id="map" className="about__map">
           <iframe 
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3944.260461680812!2d115.23515957330707!3d-8.666761388204078!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd241c71ec06c59%3A0x5009ad1a6e2b40ca!2sFlinders%20Cafe!5e0!3m2!1sen!2sid!4v1780663467331!5m2!1sen!2sid" 
             width="100%" 
-            height="450" 
-            style={{ border: 0, borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }} 
+            height="100%" 
+            style={{ border: 0 }} 
             allowFullScreen="" 
             loading="lazy" 
             referrerPolicy="no-referrer-when-downgrade"
@@ -58,11 +58,10 @@ export default function AboutSection({ lang = "en" }) {
             />
             <h3 className="about__info-label">{t.location}</h3>
             <p className="about__info-text">
-              Jl. Merdeka IX No.9, Panjer, Denpasar Selatan, Bali 80235
+              Jl. Merdeka IX No.9, Panjer,<br />
+              Denpasar Selatan, Bali<br />
+              80235
             </p>
-            <a href="#map" className="about__info-link">
-              {t.maps}
-            </a>
           </div>
           <div className="about__info-card">
             <img
@@ -71,8 +70,10 @@ export default function AboutSection({ lang = "en" }) {
               className="about__info-icon"
             />
             <h3 className="about__info-label">{t.hours}</h3>
-            <p className="about__info-text">{t.everyday}</p>
-            <p className="about__info-text">11am – 10pm</p>
+            <div className="about__hours-row">
+              <span className="about__info-text">{t.everyday}</span>
+              <span className="about__info-text">11am - 10pm</span>
+            </div>
           </div>
           <div className="about__info-card">
             <img
@@ -82,35 +83,45 @@ export default function AboutSection({ lang = "en" }) {
             />
             <h3 className="about__info-label">{t.contact}</h3>
             <p className="about__info-text">08512345678953</p>
-            <p className="about__info-text">flinderscaffe@gmail.com</p>
+            <p className="about__info-text">flinderscaffe@gmail..com</p>
+            
+            <div className="about__social">
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
+                className="about__social-link"
+              >
+                <img
+                  src={IMAGES.instagram}
+                  alt="Instagram"
+                  className="about__social-img"
+                />
+              </a>
+              <a
+                href="https://wa.me/"
+                target="_blank"
+                rel="noreferrer"
+                className="about__social-link"
+              >
+                <img
+                  src={IMAGES.whatsapp}
+                  alt="WhatsApp"
+                  className="about__social-img"
+                />
+              </a>
+              <a
+                href="mailto:flinderscaffe@gmail.com"
+                className="about__social-link"
+              >
+                <img
+                  src={IMAGES.email}
+                  alt="Email"
+                  className="about__social-img"
+                />
+              </a>
+            </div>
           </div>
-        </div>
-
-        <div className="about__social">
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noreferrer"
-            className="about__social-link"
-          >
-            <img
-              src={IMAGES.instagram}
-              alt="Instagram"
-              className="about__social-img"
-            />
-          </a>
-          <a
-            href="https://wa.me/"
-            target="_blank"
-            rel="noreferrer"
-            className="about__social-link"
-          >
-            <img
-              src={IMAGES.whatsapp}
-              alt="WhatsApp"
-              className="about__social-img"
-            />
-          </a>
         </div>
       </div>
     </section>

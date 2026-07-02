@@ -56,7 +56,7 @@ body.modal-open {
   border-radius: 28px;
   width: 48px;
   height: 44px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   font-size: 24px;
   color: #1e1e1e;
@@ -105,7 +105,7 @@ body.modal-open {
 }
 
 .mdm-name {
-  font-family: 'Georgia', serif;
+  font-family: 'The Seasons', serif;
   font-size: 26px;
   font-weight: 700;
   color: #000000;
@@ -116,7 +116,7 @@ body.modal-open {
 }
 
 .mdm-subtitle {
-  font-family: 'Georgia', serif;
+  font-family: 'The Seasons', serif;
   font-size: 16px;
   color: #39746c;
   margin: 0;
@@ -137,7 +137,7 @@ body.modal-open {
 }
 
 .mdm-desc {
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   color: #444444;
   line-height: 1.5;
@@ -195,7 +195,7 @@ body.modal-open {
   border: none;
   border-radius: 20px;
   padding: 10px 24px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;

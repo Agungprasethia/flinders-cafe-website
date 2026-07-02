@@ -15,7 +15,7 @@
   width: 100%;
   min-height: 100vh;
   overflow: hidden;
-  font-family: 'Inter', 'DM Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 
 /* Background */
@@ -29,6 +29,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center center;
   display: block;
 }
 
@@ -54,17 +55,28 @@
 }
 
 .fg-title {
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
   font-size: 64px;
   color: var(--white);
-  letter-spacing: 10.24px;
   margin: 0 0 8px;
   line-height: 1.1;
 }
 
+.fg-title-sans {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 2px;
+}
+
+.fg-title-serif {
+  font-family: 'The Seasons', serif;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 5px;
+}
+
 .fg-subtitle {
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   font-size: 32px;
   color: var(--white);
@@ -166,7 +178,7 @@
   font-weight: 700;
   font-size: 22px;
   transition: background 0.2s, transform 0.2s;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   z-index: 10;
 }
 
@@ -205,11 +217,22 @@
 
 /* Follow text */
 .fg-follow-text {
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   font-size: 28px;
   color: var(--white);
   letter-spacing: 0.28px;
   text-align: center;
   margin: 24px 0 0;
+}
+
+/* Override Elfsight Widget Text Colors to White */
+.fg-wrapper [class*="elfsight"] *,
+.fg-wrapper [class*="eapps"] * {
+  color: #ffffff !important;
+}
+
+.fg-wrapper [class*="elfsight"] a,
+.fg-wrapper [class*="eapps"] a {
+  color: #ffffff !important;
 }

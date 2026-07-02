@@ -2,7 +2,38 @@ import { useState, useEffect } from "react";
 import "./CartModal.css";
 import { IMAGES } from "../../constants";
 
-export default function CartModal({ isOpen, onClose }) {
+export default function CartModal({ lang = "en", isOpen, onClose }) {
+  const texts = {
+    id: {
+      title: "Keranjang Saya",
+      confirmTitle: "Konfirmasi Keranjang Saya",
+      taxLabel: "tax & service 10%",
+      totalLabel: "total",
+      checkout: "checkout",
+      nameLabel: "nama",
+      tableLabel: "meja",
+      sendWA: "Kirim via Whatsapp",
+      waGreeting: "Halo Flinders Cafe, saya ingin memesan:",
+      waName: "Nama",
+      waTable: "Meja",
+      waOrder: "Pesanan"
+    },
+    en: {
+      title: "My Cart",
+      confirmTitle: "Confirm My Cart",
+      taxLabel: "tax & service 10%",
+      totalLabel: "total",
+      checkout: "checkout",
+      nameLabel: "name",
+      tableLabel: "table",
+      sendWA: "Send via Whatsapp",
+      waGreeting: "Hello Flinders Cafe, I would like to order:",
+      waName: "Name",
+      waTable: "Table",
+      waOrder: "Order"
+    }
+  };
+  const t = texts[lang] || texts.en;
   const [step, setStep] = useState(1); // 1 = Keranjang, 2 = Konfirmasi
   const [formData, setFormData] = useState({ name: "", table: "" });
   
@@ -13,21 +44,21 @@ export default function CartModal({ isOpen, onClose }) {
       name: "creamy butterscoot latte",
       price: 55000,
       quantity: 2,
-      img: IMAGES.menu1 || "https://via.placeholder.com/60" // Fallback if no image
+      img: IMAGES.menuFood
     },
     {
       id: 2,
       name: "mie goreng spesial",
       price: 55000,
       quantity: 1,
-      img: IMAGES.menu2 || "https://via.placeholder.com/60"
+      img: IMAGES.menuFood
     },
     {
       id: 3,
       name: "creamy butterscoot latte",
       price: 55000,
       quantity: 1,
-      img: IMAGES.menu1 || "https://via.placeholder.com/60"
+      img: IMAGES.menuFood
     }
   ]);
 
@@ -71,8 +102,8 @@ export default function CartModal({ isOpen, onClose }) {
 
   const handleWA = () => {
     // Generate text for WhatsApp
-    let text = `Halo Flinders Cafe, saya ingin memesan:\n\n`;
-    text += `Nama: ${formData.name}\nMeja: ${formData.table}\n\nPesanan:\n`;
+    let text = `${t.waGreeting}\n\n`;
+    text += `${t.waName}: ${formData.name}\n${t.waTable}: ${formData.table}\n\n${t.waOrder}:\n`;
     items.forEach(item => {
       text += `- ${item.name} (${item.quantity}x) = ${formatPrice(item.price * item.quantity)}\n`;
     });
@@ -86,15 +117,12 @@ export default function CartModal({ isOpen, onClose }) {
 
   return (
     <div className="cart-overlay" onClick={onClose}>
-      <img src={IMAGES.reservasiBg} alt="" className="cart-bg" />
-      <div className="cart-bg-overlay" />
-
       <div className="cart-modal" onClick={(e) => e.stopPropagation()}>
         <button className="cart-close" onClick={onClose}>✕</button>
 
         {step === 1 ? (
           <div className="cart-content">
-            <h2 className="cart-title">Keranjang Saya</h2>
+            <h2 className="cart-title">{t.title}</h2>
 
             <div className="cart-items">
               {items.map((item) => (
@@ -127,7 +155,7 @@ export default function CartModal({ isOpen, onClose }) {
                 </div>
               </div>
               <button className="cart-btn-checkout" onClick={handleCheckout}>
-                checkout
+                {t.checkout}
               </button>
             </div>
           </div>
@@ -135,12 +163,12 @@ export default function CartModal({ isOpen, onClose }) {
           <div className="cart-content">
             <div className="cart-header-with-back">
               <button className="cart-back-btn" onClick={() => setStep(1)}>&lt;</button>
-              <h2 className="cart-title">Konfirmasi Keranjang Saya</h2>
+              <h2 className="cart-title">{t.confirmTitle}</h2>
             </div>
 
             <div className="cart-form">
               <div className="cart-form__row">
-                <label>nama</label>
+                <label>{t.nameLabel}</label>
                 <input 
                   type="text" 
                   value={formData.name} 
@@ -148,7 +176,7 @@ export default function CartModal({ isOpen, onClose }) {
                 />
               </div>
               <div className="cart-form__row">
-                <label>meja</label>
+                <label>{t.tableLabel}</label>
                 <input 
                   type="text" 
                   value={formData.table} 
@@ -190,7 +218,7 @@ export default function CartModal({ isOpen, onClose }) {
                 onClick={handleWA}
                 disabled={!formData.name || !formData.table}
               >
-                Kirim via Whatsapp
+                {t.sendWA}
               </button>
             </div>
           </div>

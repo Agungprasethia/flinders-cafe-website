@@ -6,12 +6,12 @@ import Step2WaktuTamu from "./steps/Step2WaktuTamu";
 import Step3DataPemesan from "./steps/Step3DataPemesan";
 import Step4Konfirmasi from "./steps/Step4Konfirmasi";
 
-function StepIndicator({ currentStep }) {
+function StepIndicator({ currentStep, lang = "en" }) {
   const steps = [
-    { num: 1, label: "Pilih Tanggal" },
-    { num: 2, label: "Waktu & Tamu" },
-    { num: 3, label: "Data Pemesanan" },
-    { num: 4, label: "Konfirmasi" },
+    { num: 1, label: lang === "id" ? "Pilih Tanggal" : "Select Date" },
+    { num: 2, label: lang === "id" ? "Waktu & Tamu" : "Time & Guests" },
+    { num: 3, label: lang === "id" ? "Data Pemesan" : "Reservation Data" },
+    { num: 4, label: lang === "id" ? "Konfirmasi" : "Confirmation" },
   ];
 
   return (
@@ -46,7 +46,7 @@ function StepIndicator({ currentStep }) {
   );
 }
 
-export default function ReservasiSection() {
+export default function ReservasiSection({ lang = "en" }) {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -87,16 +87,21 @@ export default function ReservasiSection() {
 
       <div className="reservasi-card">
         <div className="reservasi-card__header">
-            <h2 className="reservasi-card__title">Reservasi Meja</h2>
+            <h2 className="reservasi-card__title">
+              {lang === "id" ? "Reservasi Meja" : "Table Reservation"}
+            </h2>
             <p className="reservasi-card__subtitle">
-              reservasi meja anda dan nikmati pengalaman terbaik bersama kami.
+              {lang === "id" 
+                ? "reservasi meja anda dan nikmati pengalaman terbaik bersama kami."
+                : "reserve your table and enjoy the best experience with us."}
             </p>
           </div>
 
-          {!isSuccess && <StepIndicator currentStep={step} />}
+          {!isSuccess && <StepIndicator currentStep={step} lang={lang} />}
 
           {step === 1 && (
             <Step1Tanggal
+              lang={lang}
               onNext={() => setStep(2)}
               selectedDate={selectedDate}
               onSelectDate={setSelectedDate}
@@ -104,6 +109,7 @@ export default function ReservasiSection() {
           )}
           {step === 2 && (
             <Step2WaktuTamu
+              lang={lang}
               onNext={() => setStep(3)}
               onBack={() => setStep(1)}
               selectedDate={selectedDate}
@@ -115,6 +121,7 @@ export default function ReservasiSection() {
           )}
           {step === 3 && (
             <Step3DataPemesan
+              lang={lang}
               onNext={() => setStep(4)}
               onBack={() => setStep(2)}
               onSubmit={handleSubmit}
@@ -128,6 +135,7 @@ export default function ReservasiSection() {
           )}
           {step === 4 && (
             <Step4Konfirmasi
+              lang={lang}
               selectedDate={selectedDate}
               selectedTime={selectedTime}
               guestCount={guestCount}

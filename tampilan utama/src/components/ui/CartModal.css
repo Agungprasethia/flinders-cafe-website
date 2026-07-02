@@ -1,5 +1,5 @@
 /* =========================================
-   CART MODAL CSS (Matching Figma Design)
+   CART MODAL CSS (Simple Popup Style)
    ========================================= */
 
 .cart-overlay {
@@ -10,25 +10,8 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-}
-
-.cart-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-  filter: blur(2px);
-  transform: scale(1.05);
-}
-
-.cart-bg-overlay {
-  position: absolute;
-  inset: 0;
-  background: #39746c;
-  opacity: 0.85;
-  mix-blend-mode: multiply;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
 }
 
 .cart-modal {
@@ -84,7 +67,7 @@
   margin: 0;
   padding: 24px 0 20px;
   text-align: center;
-  font-family: 'Georgia', serif;
+  font-family: 'The Seasons', serif;
   font-size: 24px;
   font-weight: 700;
   color: #1a1a1a;
@@ -111,7 +94,7 @@
 .cart-back-btn {
   background: transparent;
   border: none;
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 24px;
   font-weight: 600;
   color: #1a1a1a;
@@ -159,7 +142,7 @@
 }
 
 .cart-item__name {
-  font-family: 'Georgia', serif;
+  font-family: 'The Seasons', serif;
   font-size: 16px;
   font-weight: 700;
   color: #39746c;
@@ -228,7 +211,7 @@
 }
 
 .cart-form__row label {
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: #1a1a1a;
@@ -240,7 +223,7 @@
   border: none;
   border-radius: 6px;
   padding: 8px 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   flex: 1;
   outline: none;
@@ -279,7 +262,7 @@
 }
 
 .cart-footer__label {
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 11px;
   font-weight: 700;
   color: #1a1a1a;
@@ -294,7 +277,7 @@
 }
 
 .cart-footer__label-total {
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 16px;
   font-weight: 700;
   color: #1a1a1a;
@@ -314,7 +297,7 @@
   border: none;
   border-radius: 20px;
   padding: 10px 24px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -331,7 +314,7 @@
   border: none;
   border-radius: 12px;
   padding: 14px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 700;
   font-size: 16px;
   cursor: pointer;

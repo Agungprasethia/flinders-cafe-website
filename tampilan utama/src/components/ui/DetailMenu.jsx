@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./DetailMenu.css";
 
-import imgMenuItem from "../../assets/images/menu-food.png";
+import imgMenuItem from "../../assets/images/menu-food-gray.png";
 
 const menuData = [
   {

@@ -1,12 +1,7 @@
-import { TIME_SLOTS, DAYS, MONTHS } from "../../../constants";
-
-function formatDate(date) {
-  if (!date) return "";
-  const d = new Date(date);
-  return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-}
+import { TIME_SLOTS } from "../../../constants";
 
 export default function Step2WaktuTamu({
+  lang = "en",
   onNext,
   onBack,
   selectedDate,
@@ -15,21 +10,53 @@ export default function Step2WaktuTamu({
   guestCount,
   onGuestChange,
 }) {
+  const texts = {
+    id: {
+      back: "‹ Kembali",
+      timeTitle: "PILIH JAM KEDATANGAN",
+      guestTitle: "JUMLAH TAMU",
+      person: "orang",
+      minSpend: "*Minimum spend per person 100k",
+      next: "Lanjutkan →",
+      note: "Booking belum terkonfirmasi secara otomatis. Tim kami akan menghubungi Anda via WhatsApp dalam 15–30 menit.",
+      days: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+      months: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+    },
+    en: {
+      back: "‹ Back",
+      timeTitle: "SELECT ARRIVAL TIME",
+      guestTitle: "NUMBER OF GUESTS",
+      person: "people",
+      minSpend: "*Minimum spend per person 100k",
+      next: "Continue →",
+      note: "Booking is not automatically confirmed. Our team will contact you via WhatsApp within 15-30 minutes.",
+      days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    }
+  };
+  const t = texts[lang] || texts.en;
+
+  const formatDateTranslated = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    return `${t.days[d.getDay()]}, ${d.getDate()} ${t.months[d.getMonth()]} ${d.getFullYear()}`;
+  };
+
   return (
     <div className="reservasi-step-content">
       <button className="reservasi-btn-back" onClick={onBack}>
-        ‹ Kembali
+        {t.back}
       </button>
 
       <div className="reservasi-summary-box">
         <div className="reservasi-summary-box__row">
-          <span>📅</span> <span>{formatDate(selectedDate)}</span>
+          <span>📅</span> <span>{formatDateTranslated(selectedDate)}</span>
         </div>
       </div>
 
       <div className="reservasi-section">
         <h4 className="reservasi-section__title">
-          <span>🕐</span> PILIH JAM KEDATANGAN
+          <span>🕐</span> {t.timeTitle}
         </h4>
         <div className="reservasi-timeslots">
           {TIME_SLOTS.map((time) => (
@@ -46,7 +73,7 @@ export default function Step2WaktuTamu({
 
       <div className="reservasi-section">
         <h4 className="reservasi-section__title">
-          <span>👥</span> JUMLAH TAMU
+          <span>👥</span> {t.guestTitle}
         </h4>
         <div className="reservasi-guest">
           <div className="reservasi-guest__counter">
@@ -58,7 +85,7 @@ export default function Step2WaktuTamu({
             </button>
             <div className="reservasi-guest__count">
               <span>{guestCount}</span>
-              <small>orang</small>
+              <small>{t.person}</small>
             </div>
             <button
               className="reservasi-guest__btn"
@@ -68,7 +95,7 @@ export default function Step2WaktuTamu({
             </button>
           </div>
           <p className="reservasi-guest__note">
-            *Minimum spend per person 100k
+            {t.minSpend}
           </p>
         </div>
       </div>
@@ -78,12 +105,11 @@ export default function Step2WaktuTamu({
         onClick={onNext}
         disabled={!selectedTime}
       >
-        Lanjutkan →
+        {t.next}
       </button>
 
       <p className="reservasi-note">
-        Booking belum terkonfirmasi secara otomatis. Tim kami akan menghubungi
-        Anda via WhatsApp dalam 15–30 menit.
+        {t.note}
       </p>
     </div>
   );

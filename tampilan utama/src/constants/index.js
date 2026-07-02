@@ -1,16 +1,23 @@
-import heroBg from "../assets/images/hero-bg.jpg";
+import heroBg from "../assets/images/background 1.png";
 import logo from "../assets/images/logo.png";
-import aboutBg from "../assets/images/about-bg.jpg";
-import galleryBg from "../assets/images/gallery-bg.jpg";
+import aboutBg from "../assets/images/beranda about.png";
+import galleryBg from "../assets/images/beranda gallery.png";
 import promoBg from "../assets/images/promo-bg.jpg";
 import promo1 from "../assets/images/promo1.jpg";
 import promo2 from "../assets/images/promo2.jpg";
-import menuFood from "../assets/images/menu-food.png";
+import menuBg from "../assets/images/background menu.png";
+import menuFood from "../assets/images/menu-food-gray.png";
 import menuFoodGray from "../assets/images/menu-food-gray.png";
-import galleryItem from "../assets/images/gallery-item.jpg";
-import reservasiBg from "../assets/images/reservasi-bg.jpg";
-import reservasiLogo from "../assets/images/reservasi-logo.png";
+import galleryItem from "../assets/images/promo1.jpg";
+import reservasiBg from "../assets/images/background resorvasi dan keranjang.png";
+import reservasiLogo from "../assets/images/logo.png";
 import reservasiStep2 from "../assets/images/reservasi-step2.png";
+import iconMap from "../assets/images/Icon.png";
+import iconClock from "../assets/images/clock-01.png";
+import iconPhone from "../assets/images/phone-call-01.png";
+import instagramIcon from "../assets/images/Social Icons.png";
+import whatsappIcon from "../assets/images/Social Icons (1).png";
+import emailIcon from "../assets/images/Icon (1).png";
 
 export const IMAGES = {
   heroBg,
@@ -20,14 +27,16 @@ export const IMAGES = {
   promoBg,
   promo1,
   promo2,
+  menuBg,
   menuFood,
   menuFoodGray,
   galleryItem,
-  instagram: "",
-  whatsapp: "",
-  iconMap: "",
-  iconClock: "",
-  iconPhone: "",
+  instagram: instagramIcon,
+  whatsapp: whatsappIcon,
+  email: emailIcon,
+  iconMap,
+  iconClock,
+  iconPhone,
   reservasiBg,
   reservasiLogo,
   reservasiCalendar: reservasiStep2, // using step2 as fallback

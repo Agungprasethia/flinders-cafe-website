@@ -32,18 +32,12 @@ export default function Navbar({ lang = "en", onReservasiClick, onMenuClick, onC
             className="navbar__logo-img"
           />
         </div>
-        <div className="navbar__brand-text">
-          <span className="navbar__brand-name">FLINDERS</span>
-          <span className="navbar__brand-sub">CAFE</span>
-        </div>
       </div>
       <ul className="navbar__links">
         <li>
           <a href="#menu">{t.menu}</a>
         </li>
-        <li>
-          <a href="#promo">{t.promo}</a>
-        </li>
+
         <li>
           <a href="#reservasi" onClick={(e) => { e.preventDefault(); onReservasiClick?.(); }}>{t.reservasi}</a>
         </li>

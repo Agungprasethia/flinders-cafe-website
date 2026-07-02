@@ -12,7 +12,7 @@ function formatDate(date) {
   return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-export default function Step1Tanggal({ onNext, selectedDate, onSelectDate }) {
+export default function Step1Tanggal({ lang = "en", onNext, selectedDate, onSelectDate }) {
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -56,6 +56,34 @@ export default function Step1Tanggal({ onNext, selectedDate, onSelectDate }) {
     return d < new Date(today.getFullYear(), today.getMonth(), today.getDate());
   };
 
+  const texts = {
+    id: {
+      available: "Tersedia",
+      full: "Penuh",
+      selected: "Dipilih",
+      next: "Lanjutkan →",
+      note: "Booking belum terkonfirmasi secara otomatis. Tim kami akan menghubungi Anda via WhatsApp dalam 15–30 menit.",
+      days: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+      months: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+    },
+    en: {
+      available: "Available",
+      full: "Full",
+      selected: "Selected",
+      next: "Continue →",
+      note: "Booking is not automatically confirmed. Our team will contact you via WhatsApp within 15-30 minutes.",
+      days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    }
+  };
+  const t = texts[lang] || texts.en;
+
+  const formatDateTranslated = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    return `${t.days[d.getDay()]}, ${d.getDate()} ${t.months[d.getMonth()]} ${d.getFullYear()}`;
+  };
+
   return (
     <div className="reservasi-step-content">
       <div className="reservasi-calendar">
@@ -64,7 +92,7 @@ export default function Step1Tanggal({ onNext, selectedDate, onSelectDate }) {
             ‹
           </button>
           <span className="reservasi-calendar__month">
-            {MONTHS[viewMonth]} {viewYear}
+            {t.months[viewMonth]} {viewYear}
           </span>
           <button className="reservasi-calendar__nav" onClick={nextMonth}>
             ›
@@ -72,7 +100,7 @@ export default function Step1Tanggal({ onNext, selectedDate, onSelectDate }) {
         </div>
 
         <div className="reservasi-calendar__days-header">
-          {DAYS.map((d) => (
+          {t.days.map((d) => (
             <span key={d}>{d}</span>
           ))}
         </div>
@@ -115,13 +143,13 @@ export default function Step1Tanggal({ onNext, selectedDate, onSelectDate }) {
 
         <div className="reservasi-calendar__legend">
           <span>
-            <span className="legend-dot legend-dot--available" /> Tersedia
+            <span className="legend-dot legend-dot--available" /> {t.available}
           </span>
           <span>
-            <span className="legend-dot legend-dot--full" /> Penuh
+            <span className="legend-dot legend-dot--full" /> {t.full}
           </span>
           <span>
-            <span className="legend-dot legend-dot--selected" /> Dipilih
+            <span className="legend-dot legend-dot--selected" /> {t.selected}
           </span>
         </div>
       </div>
@@ -129,8 +157,8 @@ export default function Step1Tanggal({ onNext, selectedDate, onSelectDate }) {
       {selectedDate && (
         <div className="reservasi-selected-date">
           <span>📅</span>
-          <span>{formatDate(selectedDate)}</span>
-          <span className="reservasi-selected-date__badge">Tersedia</span>
+          <span>{formatDateTranslated(selectedDate)}</span>
+          <span className="reservasi-selected-date__badge">{t.available}</span>
         </div>
       )}
 
@@ -139,12 +167,11 @@ export default function Step1Tanggal({ onNext, selectedDate, onSelectDate }) {
         onClick={onNext}
         disabled={!selectedDate}
       >
-        Lanjutkan →
+        {t.next}
       </button>
 
       <p className="reservasi-note">
-        Booking belum terkonfirmasi secara otomatis. Tim kami akan menghubungi
-        Anda via WhatsApp dalam 15–30 menit.
+        {t.note}
       </p>
     </div>
   );

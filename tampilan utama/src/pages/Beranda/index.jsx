@@ -9,14 +9,9 @@ import AboutSection from "./sections/AboutSection";
 import DetailMenu from "../../components/ui/DetailMenu";
 import MenuDetailModal from "../../components/ui/MenuDetailModal";
 
-export default function Beranda({ onCartClick }) {
+export default function Beranda({ lang, toggleLang, onCartClick }) {
   const [showFullMenu, setShowFullMenu] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState(null);
-  const [lang, setLang] = useState("en");
-
-  const toggleLang = () => {
-    setLang((prev) => (prev === "en" ? "id" : "en"));
-  };
 
   const handleReservasiClick = () => {
     document.getElementById('reservasi')?.scrollIntoView({ behavior: 'smooth' });
@@ -38,7 +33,7 @@ export default function Beranda({ onCartClick }) {
         onCartClick={onCartClick}
       />
       <MenuSection lang={lang} onMenuSelect={(item) => setSelectedMenu(item)} />
-      <ReservasiSection />
+      <ReservasiSection lang={lang} />
       <FlindersGallery lang={lang} />
       <AboutSection lang={lang} />
 
