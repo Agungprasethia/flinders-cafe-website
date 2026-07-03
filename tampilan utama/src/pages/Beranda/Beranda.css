@@ -305,7 +305,7 @@ img {
   background-color: var(--color-primary);
   padding: 10px 20px;
   border-radius: 30px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease;
 }
 
@@ -411,7 +411,8 @@ img {
   position: relative;
   width: 100%;
   overflow: hidden;
-  background-color: #052924; /* Dark rich green base */
+  background-color: #052924;
+  /* Dark rich green base */
 }
 
 .menu-section__bg {
@@ -427,7 +428,7 @@ img {
 .menu-section__overlay {
   position: absolute;
   inset: 0;
-  background: rgba(5, 41, 36, 0.3); 
+  background: rgba(5, 41, 36, 0.3);
 }
 
 .menu-section__content {

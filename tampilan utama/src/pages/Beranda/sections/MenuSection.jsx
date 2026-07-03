@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { IMAGES, MENU_ITEMS } from "../../../constants";
 import PromoDetailModal from "../../../components/ui/PromoDetailModal";
+import { getMenus } from "../../../services/api";
 
 export default function MenuSection({ lang = "en", onMenuSelect }) {
   const [activeCategory, setActiveCategory] = useState("recomended");
@@ -200,7 +201,7 @@ export default function MenuSection({ lang = "en", onMenuSelect }) {
   ];
 
   // Dummy menu data to match screenshot
-  const menuData = [
+  const dummyMenuData = [
     { id: 1, name: "creamy butterscoot latte", price: "55k", img: IMAGES.menuFood, hasStar: true },
     { id: 2, name: "chicken parmigiana", price: "55k", img: IMAGES.menuFood, hasStar: false },
     { id: 3, name: "ice latte", price: "55k", img: IMAGES.menuFood, hasStar: false },
@@ -210,6 +211,25 @@ export default function MenuSection({ lang = "en", onMenuSelect }) {
     { id: 7, name: "ice latte", price: "55k", img: IMAGES.menuFood, hasStar: false },
     { id: 8, name: "mie goreng spesial", price: "55k", img: IMAGES.menuFood, hasStar: false },
   ];
+
+  const [menuData, setMenuData] = useState(dummyMenuData);
+
+  useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        const data = await getMenus({ category: activeCategory });
+        if (data && data.length > 0) {
+          setMenuData(data);
+        } else {
+          setMenuData(dummyMenuData);
+        }
+      } catch (err) {
+        console.warn("[MenuSection] Backend belum aktif, menggunakan data dummy:", err.message);
+        setMenuData(dummyMenuData);
+      }
+    };
+    fetchMenus();
+  }, [activeCategory]);
 
   // Render title with mixed typography
   const renderTitle = (titleParts) => {

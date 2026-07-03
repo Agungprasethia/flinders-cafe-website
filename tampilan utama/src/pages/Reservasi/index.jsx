@@ -5,6 +5,7 @@ import Step1Tanggal from "./steps/Step1Tanggal";
 import Step2WaktuTamu from "./steps/Step2WaktuTamu";
 import Step3DataPemesan from "./steps/Step3DataPemesan";
 import Step4Konfirmasi from "./steps/Step4Konfirmasi";
+import { submitReservation } from "../../services/api";
 
 function StepIndicator({ currentStep, lang = "en" }) {
   const steps = [
@@ -71,13 +72,27 @@ export default function ReservasiSection({ lang = "en" }) {
     }, 300);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      // Kirim data reservasi ke backend
+      await submitReservation({
+        tanggal: selectedDate,
+        waktu: selectedTime,
+        jumlah_tamu: guestCount,
+        nama: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        catatan: formData.notes,
+      });
+    } catch (err) {
+      // Backend belum aktif / error — tetap lanjut ke step konfirmasi
+      console.warn("[Reservasi] Backend belum aktif atau error:", err.message);
+    } finally {
       setIsSubmitting(false);
       setIsSuccess(true);
       setStep(4);
-    }, 1500);
+    }
   };
 
   return (
