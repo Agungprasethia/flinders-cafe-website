@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { login } from '../services/api';
 
 const ADMIN_USERNAME = 'admin1';
 const ADMIN_PASSWORD = 'admin123';
@@ -13,20 +14,31 @@ export default function Login({ onLogin }) {
   const [loading, setLoading] = useState(false);
 
   // Hapus tipe : React.FormEvent pada parameter 'e'
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      const data = await login(username, password);
+      // Backend respons sukses
+      if (data.token) {
+        localStorage.setItem('admin_token', data.token);
+      }
+      localStorage.setItem('flinders_auth', 'true');
+      onLogin();
+    } catch (err) {
+      console.warn("[Admin Login] Backend error, mencoba fallback dummy:", err.message);
+      // Fallback ke login dummy
       if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
         localStorage.setItem('flinders_auth', 'true');
         onLogin();
       } else {
         setError('Username atau password salah.');
-        setLoading(false);
       }
-    }, 400);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

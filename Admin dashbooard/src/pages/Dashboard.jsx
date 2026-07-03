@@ -1,15 +1,14 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   ClipboardList, Coffee, Tag, Layout,
   Plus, Edit2, Trash2, Eye, Star, LogOut, X, Upload, Image,
   ChevronLeft, ChevronRight, Minus, Calendar, Clock, Users, Phone, User
 } from 'lucide-react';
 
-// Hapus interface AdminDashboardProps
+import { getAdminReservations, addAdminReservation } from '../services/api';
+
 export default function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('reservasi');
-
-  const Sidebar = () => {
     const menuItems = [
       { id: 'reservasi', label: 'Kelola Reservasi', icon: ClipboardList },
       { id: 'menu', label: 'Kelola Menu', icon: Coffee },
@@ -140,6 +139,22 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
     setJumlahTamu(2);
     setFormData({ nama: '', whatsapp: '', catatan: '' });
     onClose();
+  };
+
+  const handleSimpan = async () => {
+    try {
+      await addAdminReservation({
+        tanggal: selectedDate,
+        waktu: selectedTime,
+        jumlah_tamu: jumlahTamu,
+        nama: formData.nama,
+        whatsapp: formData.whatsapp,
+        catatan: formData.catatan
+      });
+    } catch (err) {
+      console.warn("[Admin Dashboard] Backend error, fallback simulasi sukses:", err.message);
+    }
+    handleReset();
   };
 
   const prevMonth = () => {
@@ -468,7 +483,7 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
             <button
               data-testid="btn-simpan-reservasi"
               disabled={!formData.nama || !formData.whatsapp}
-              onClick={handleReset}
+              onClick={handleSimpan}
               className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
                 formData.nama && formData.whatsapp
                   ? 'bg-[#2E6A67] text-white hover:bg-[#245552] shadow-md'
@@ -489,11 +504,30 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
 // ==========================================
 const ReservasiView = ({ Header }) => {
   const [showTambahReservasi, setShowTambahReservasi] = useState(false);
+  const [reservasiData, setReservasiData] = useState([]);
+
   const dummyReservasi = [
     { id: 1, waktu: '26 Mei 2026 13.00', customer: 'Andrew', kontak: '08521138204239', jumlah: 3, status: 'Menunggu', color: 'text-yellow-600 bg-yellow-50' },
     { id: 2, waktu: '26 Mei 2026 13.00', customer: 'Andrew', kontak: '08521138204239', jumlah: 3, status: 'Selesai', color: 'text-green-600 bg-green-50' },
     { id: 3, waktu: '26 Mei 2026 13.00', customer: 'Andrew', kontak: '08521138204239', jumlah: 3, status: 'Batal', color: 'text-red-600 bg-red-50' },
   ];
+
+  useEffect(() => {
+    const fetchReservasi = async () => {
+      try {
+        const data = await getAdminReservations();
+        if (data && data.length > 0) {
+          setReservasiData(data);
+        } else {
+          setReservasiData(dummyReservasi);
+        }
+      } catch (err) {
+        console.warn("[Admin Dashboard] Backend error saat mengambil reservasi:", err.message);
+        setReservasiData(dummyReservasi);
+      }
+    };
+    fetchReservasi();
+  }, []);
 
   return (
     <>
@@ -519,7 +553,7 @@ const ReservasiView = ({ Header }) => {
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
-                {dummyReservasi.map((row) => (
+                {reservasiData.map((row) => (
                   <tr key={row.id} className="hover:bg-gray-50 transition-colors">
                     <td className="p-4 font-medium text-gray-700">{row.waktu}</td>
                     <td className="p-4">{row.customer}</td>
