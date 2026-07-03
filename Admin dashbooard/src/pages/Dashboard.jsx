@@ -9,6 +9,8 @@ import { getAdminReservations, addAdminReservation } from '../services/api';
 
 export default function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('reservasi');
+
+  const Sidebar = () => {
     const menuItems = [
       { id: 'reservasi', label: 'Kelola Reservasi', icon: ClipboardList },
       { id: 'menu', label: 'Kelola Menu', icon: Coffee },
