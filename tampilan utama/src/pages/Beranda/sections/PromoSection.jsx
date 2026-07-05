@@ -14,7 +14,7 @@ export default function PromoSection({ lang = "en" }) {
   useEffect(() => {
     const loadPromos = async () => {
       try {
-        const result = await apiRequest("/api/promo");
+        const result = await apiRequest("/api/promo?active=true");
         setPromos(result);
       } catch (error) {
         setPromos([]);

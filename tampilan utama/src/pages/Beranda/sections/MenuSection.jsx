@@ -4,13 +4,14 @@ import PromoDetailModal from "../../../components/ui/PromoDetailModal";
 import { apiRequest } from "../../../lib/api";
 
 export default function MenuSection({ onMenuSelect }) {
-  const [activeCategory, setActiveCategory] = useState("recomended");
+  const [activeCategory, setActiveCategory] = useState("all menu");
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [menus, setMenus] = useState([]);
   const [promos, setPromos] = useState([]);
   const [search, setSearch] = useState("");
 
   const categories = [
+    "all menu",
     "recomended",
     "best seller",
     "drink",
@@ -21,6 +22,7 @@ export default function MenuSection({ onMenuSelect }) {
   useEffect(() => {
     const loadContent = async () => {
       const categoryMap = {
+        "all menu": "all",
         recomended: "all",
         "best seller": "all",
         "dessert & snack": "dessert",
@@ -36,7 +38,7 @@ export default function MenuSection({ onMenuSelect }) {
       try {
         const [menuResult, promoResult] = await Promise.all([
           apiRequest(`/api/menus?${params.toString()}`),
-          apiRequest("/api/promo"),
+          apiRequest("/api/promo?active=true"),
         ]);
         setMenus(menuResult);
         setPromos(promoResult);

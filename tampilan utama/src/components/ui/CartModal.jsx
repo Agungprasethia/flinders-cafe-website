@@ -39,29 +39,7 @@ export default function CartModal({ lang = "en", isOpen, onClose }) {
   const [formData, setFormData] = useState({ name: "", table: "" });
   
   // Dummy data matching the Figma design
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      name: "creamy butterscoot latte",
-      price: 55000,
-      quantity: 2,
-      img: IMAGES.menuFood
-    },
-    {
-      id: 2,
-      name: "mie goreng spesial",
-      price: 55000,
-      quantity: 1,
-      img: IMAGES.menuFood
-    },
-    {
-      id: 3,
-      name: "creamy butterscoot latte",
-      price: 55000,
-      quantity: 1,
-      img: IMAGES.menuFood
-    }
-  ]);
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -88,6 +66,11 @@ export default function CartModal({ lang = "en", isOpen, onClose }) {
       })
     );
   };
+
+  const removeItem = (id) => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
 
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const tax = subtotal * 0.1;
@@ -138,22 +121,29 @@ export default function CartModal({ lang = "en", isOpen, onClose }) {
             <h2 className="cart-title">{t.title}</h2>
 
             <div className="cart-items">
-              {items.map((item) => (
-                <div key={item.id} className="cart-item">
-                  <div className="cart-item__img-wrap">
-                    <img src={item.img} alt={item.name} className="cart-item__img" />
-                  </div>
-                  <div className="cart-item__info">
-                    <h3 className="cart-item__name">{item.name}</h3>
-                    <p className="cart-item__price">{formatPrice(item.price)}</p>
-                  </div>
-                  <div className="cart-item__qty-controls">
-                    <button onClick={() => updateQuantity(item.id, -1)} className="cart-qty-btn">-</button>
-                    <span className="cart-qty-val">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.id, 1)} className="cart-qty-btn">+</button>
-                  </div>
+              {items.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 20px", color: "#888", fontFamily: "DM Sans, sans-serif" }}>
+                  Keranjang belanja Anda kosong
                 </div>
-              ))}
+              ) : (
+                items.map((item) => (
+                  <div key={item.id} className="cart-item">
+                    <div className="cart-item__img-wrap">
+                      <img src={item.img} alt={item.name} className="cart-item__img" />
+                    </div>
+                    <div className="cart-item__info">
+                      <h3 className="cart-item__name">{item.name}</h3>
+                      <p className="cart-item__price">{formatPrice(item.price)}</p>
+                    </div>
+                    <div className="cart-item__qty-controls">
+                      <button onClick={() => updateQuantity(item.id, -1)} className="cart-qty-btn">-</button>
+                      <span className="cart-qty-val">{item.quantity}</span>
+                      <button onClick={() => updateQuantity(item.id, 1)} className="cart-qty-btn">+</button>
+                      <button onClick={() => removeItem(item.id)} className="cart-remove-btn" title="Hapus">✕</button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="cart-footer">
@@ -167,7 +157,12 @@ export default function CartModal({ lang = "en", isOpen, onClose }) {
                   <span className="cart-footer__value-total">{formatPrice(total)}</span>
                 </div>
               </div>
-              <button className="cart-btn-checkout" onClick={handleCheckout}>
+              <button 
+                className="cart-btn-checkout" 
+                onClick={handleCheckout}
+                disabled={items.length === 0}
+                style={{ opacity: items.length === 0 ? 0.5 : 1, cursor: items.length === 0 ? 'not-allowed' : 'pointer' }}
+              >
                 {t.checkout}
               </button>
             </div>

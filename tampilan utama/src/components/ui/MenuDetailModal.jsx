@@ -42,13 +42,20 @@ export default function MenuDetailModal({ menu, lang = "en", onClose, onCartClic
 
   // Format price to Rp format
   const formatPrice = (price) => {
-    if (!price) return "";
-    const numStr = price.replace(/[^0-9]/g, "");
+    if (price === undefined || price === null) return "";
+    if (typeof price === "number") {
+      return `Rp.${price.toLocaleString("id-ID")}`;
+    }
+    const priceStr = String(price);
+    const numStr = priceStr.replace(/[^0-9]/g, "");
     if (numStr) {
-      const num = parseInt(numStr, 10) * 1000;
+      let num = parseInt(numStr, 10);
+      if (priceStr.toLowerCase().endsWith("k")) {
+        num = num * 1000;
+      }
       return `Rp.${num.toLocaleString("id-ID")}`;
     }
-    return price;
+    return priceStr;
   };
 
   return (

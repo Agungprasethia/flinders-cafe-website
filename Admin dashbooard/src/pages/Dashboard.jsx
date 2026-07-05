@@ -486,10 +486,109 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
 };
 
 // ==========================================
+// MODAL: DETAIL RESERVASI
+// ==========================================
+const DetailReservasiModal = ({ isOpen, onClose, reservasi, onStatusChange }) => {
+  if (!isOpen || !reservasi) return null;
+
+  const handleStatusUpdate = async (status) => {
+    await apiRequest(`/api/reservasi/${reservasi.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+    onStatusChange(reservasi.id, status);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-modalIn overflow-hidden">
+        {/* Header */}
+        <div className="bg-[#2E6A67] text-white px-6 py-5 relative">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
+          >
+            <X size={20} />
+          </button>
+          <h2 className="text-lg font-bold">Detail Reservasi</h2>
+          <p className="text-white/70 text-xs mt-1">Informasi lengkap pemesanan meja customer.</p>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-3 gap-2 border-b pb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">Nama</span>
+            <span className="col-span-2 text-sm font-semibold text-gray-800">{reservasi.nama || reservasi.customer || '-'}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 border-b pb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">WhatsApp</span>
+            <span className="col-span-2 text-sm font-semibold text-[#2E6A67]">{reservasi.whatsapp || reservasi.kontak || '-'}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 border-b pb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">Email</span>
+            <span className="col-span-2 text-sm font-semibold text-gray-800">{reservasi.email || '-'}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 border-b pb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">Waktu</span>
+            <span className="col-span-2 text-sm font-semibold text-gray-800">
+              {reservasi.tanggal ? new Date(reservasi.tanggal).toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+              }) : '-'} {reservasi.waktu || ''}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 border-b pb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">Tamu</span>
+            <span className="col-span-2 text-sm font-semibold text-gray-800">{reservasi.jumlahTamu || reservasi.jumlah || 1} orang</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 border-b pb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">Catatan</span>
+            <span className="col-span-2 text-sm text-gray-700 italic">{reservasi.catatan || 'Tidak ada catatan khusus'}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 pb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">Status</span>
+            <span className="col-span-2">
+              <span className={`px-2.5 py-0.5 rounded-full font-bold text-xs ${
+                reservasi.status === 'Selesai' ? 'text-green-600 bg-green-50' :
+                reservasi.status === 'Batal' ? 'text-red-600 bg-red-50' :
+                'text-yellow-600 bg-yellow-50'
+              }`}>
+                {reservasi.status}
+              </span>
+            </span>
+          </div>
+        </div>
+
+        {/* Footer: Action Buttons */}
+        <div className="flex gap-2 p-6 bg-gray-50 border-t justify-end">
+          <button
+            onClick={() => handleStatusUpdate('Batal')}
+            className="px-4 py-2 border border-red-200 text-red-600 font-semibold rounded-lg hover:bg-red-50 transition text-xs"
+          >
+            Batalkan
+          </button>
+          <button
+            onClick={() => handleStatusUpdate('Selesai')}
+            className="px-4 py-2 bg-[#2E6A67] text-white font-semibold rounded-lg hover:bg-[#245552] transition text-xs shadow-sm"
+          >
+            Selesaikan
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
 // TAB 1: KELOLA RESERVASI
 // ==========================================
 const ReservasiView = ({ Header }) => {
   const [showTambahReservasi, setShowTambahReservasi] = useState(false);
+  const [selectedReservasi, setSelectedReservasi] = useState(null);
   const [reservasi, setReservasi] = useState([]);
 
   useEffect(() => {
@@ -549,7 +648,11 @@ const ReservasiView = ({ Header }) => {
                       </span>
                     </td>
                     <td className="p-4 text-center">
-                      <button data-testid={`btn-detail-reservasi-${row.id}`} className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs font-medium hover:bg-gray-300 transition-colors">
+                      <button 
+                        data-testid={`btn-detail-reservasi-${row.id}`} 
+                        onClick={() => setSelectedReservasi(row)}
+                        className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs font-medium hover:bg-gray-300 transition-colors"
+                      >
                         Detail
                       </button>
                     </td>
@@ -563,6 +666,16 @@ const ReservasiView = ({ Header }) => {
 
       {/* Modal Tambah Reservasi */}
       <TambahReservasiModal isOpen={showTambahReservasi} onClose={() => setShowTambahReservasi(false)} />
+
+      {/* Modal Detail Reservasi */}
+      <DetailReservasiModal 
+        isOpen={!!selectedReservasi} 
+        onClose={() => setSelectedReservasi(null)} 
+        reservasi={selectedReservasi}
+        onStatusChange={(id, status) => {
+          setReservasi(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+        }}
+      />
     </>
   );
 };
@@ -827,7 +940,7 @@ const MenuSelectionModal = ({ isOpen, onClose, selectedMenus, onSave }) => {
 // ==========================================
 // MODAL: TAMBAH PROMO
 // ==========================================
-const TambahPromoModal = ({ isOpen, onClose, onCreated }) => {
+const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }) => {
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     nama: '', diskon: '', durasi: '', deskripsi: ''
@@ -835,6 +948,23 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated }) => {
   const [previewImage, setPreviewImage] = useState(null);
   const [selectedMenus, setSelectedMenus] = useState([]);
   const [showMenuSelection, setShowMenuSelection] = useState(false);
+
+  useEffect(() => {
+    if (promoToEdit) {
+      setFormData({
+        nama: promoToEdit.title || promoToEdit.nama || '',
+        diskon: promoToEdit.discount || promoToEdit.diskon || '',
+        durasi: promoToEdit.validUntil || promoToEdit.durasi || '',
+        deskripsi: promoToEdit.description || promoToEdit.deskripsi || ''
+      });
+      setPreviewImage(promoToEdit.image || null);
+      setSelectedMenus(promoToEdit.items || []);
+    } else {
+      setFormData({ nama: '', diskon: '', durasi: '', deskripsi: '' });
+      setPreviewImage(null);
+      setSelectedMenus([]);
+    }
+  }, [promoToEdit, isOpen]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -848,18 +978,28 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated }) => {
   };
 
   const handleSubmit = async () => {
-    const created = await apiRequest('/api/promo', {
-      method: 'POST',
-      body: JSON.stringify({
-        title: formData.nama,
-        discount: formData.diskon,
-        validUntil: formData.durasi,
-        description: formData.deskripsi,
-        items: selectedMenus,
-        active: true,
-      }),
-    });
-    onCreated(created);
+    const payload = {
+      title: formData.nama,
+      discount: formData.diskon,
+      validUntil: formData.durasi,
+      description: formData.deskripsi,
+      items: selectedMenus,
+      active: promoToEdit ? promoToEdit.active : true,
+    };
+
+    if (promoToEdit) {
+      const updated = await apiRequest(`/api/promo/${promoToEdit.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+      onUpdated(updated);
+    } else {
+      const created = await apiRequest('/api/promo', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      onCreated(created);
+    }
     handleCancel();
   };
 
@@ -1098,6 +1238,7 @@ const MenuView = ({ Header }) => {
 // ==========================================
 const PromoView = ({ Header }) => {
   const [showTambahPromo, setShowTambahPromo] = useState(false);
+  const [promoToEdit, setPromoToEdit] = useState(null);
   const [promos, setPromos] = useState([]);
 
   useEffect(() => {
@@ -1109,6 +1250,27 @@ const PromoView = ({ Header }) => {
   const deletePromo = async (id) => {
     await apiRequest(`/api/promo/${id}`, { method: 'DELETE' });
     setPromos(promos.filter((promo) => promo.id !== id));
+  };
+
+  const handleEditPromo = (promo) => {
+    setPromoToEdit(promo);
+    setShowTambahPromo(true);
+  };
+
+  const togglePromoStatus = async (promo) => {
+    const active = !promo.active;
+    const updated = await apiRequest(`/api/promo/${promo.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        title: promo.title || promo.nama,
+        discount: promo.discount || promo.diskon,
+        validUntil: promo.validUntil || promo.durasi,
+        description: promo.description || promo.deskripsi,
+        items: promo.items,
+        active,
+      }),
+    });
+    setPromos(promos.map((p) => (p.id === promo.id ? updated : p)));
   };
 
   return (
@@ -1127,7 +1289,9 @@ const PromoView = ({ Header }) => {
             <div key={promo.id} className="bg-gray-100 p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col gap-4">
               <div className="w-full h-40 bg-gray-300 rounded-lg flex items-center justify-center text-gray-400 text-sm relative">
                 {promo.image ? <img src={promo.image} alt={promo.title} className="w-full h-full object-cover rounded-lg" /> : '[Banner Promo]'}
-                <span className="absolute top-3 right-3 bg-[#2E6A67] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">Tersedia</span>
+                <span className={`absolute top-3 right-3 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm ${promo.active ? 'bg-[#2E6A67]' : 'bg-gray-400'}`}>
+                  {promo.active ? 'Tersedia' : 'Nonaktif'}
+                </span>
               </div>
               <div>
                 <h4 className="font-bold text-gray-800 text-base">{promo.title || promo.nama}</h4>
@@ -1137,9 +1301,19 @@ const PromoView = ({ Header }) => {
                 </p>
               </div>
               <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                <button data-testid={`btn-status-promo-${promo.id}`} className="bg-[#2E6A67] text-white text-xs px-4 py-1.5 rounded-md font-medium hover:bg-opacity-90 transition-all">Aktif</button>
+                <button 
+                  data-testid={`btn-status-promo-${promo.id}`} 
+                  onClick={() => togglePromoStatus(promo)}
+                  className={`text-xs px-4 py-1.5 rounded-md font-medium transition-all ${
+                    promo.active 
+                      ? 'bg-[#2E6A67] text-white hover:bg-opacity-90' 
+                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  }`}
+                >
+                  {promo.active ? 'Aktif' : 'Nonaktif'}
+                </button>
                 <div className="flex gap-3 text-gray-500">
-                  <button data-testid={`btn-edit-promo-${promo.id}`} className="cursor-pointer hover:text-blue-600 transition-colors"><Edit2 size={16} /></button>
+                  <button data-testid={`btn-edit-promo-${promo.id}`} onClick={() => handleEditPromo(promo)} className="cursor-pointer hover:text-blue-600 transition-colors"><Edit2 size={16} /></button>
                   <button data-testid={`btn-delete-promo-${promo.id}`} onClick={() => deletePromo(promo.id)} className="cursor-pointer hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
                 </div>
               </div>
@@ -1151,8 +1325,13 @@ const PromoView = ({ Header }) => {
       {/* Modal Tambah Promo */}
       <TambahPromoModal
         isOpen={showTambahPromo}
-        onClose={() => setShowTambahPromo(false)}
+        onClose={() => {
+          setShowTambahPromo(false);
+          setPromoToEdit(null);
+        }}
+        promoToEdit={promoToEdit}
         onCreated={(promo) => setPromos((current) => [...current, promo])}
+        onUpdated={(updated) => setPromos((current) => current.map((p) => (p.id === updated.id ? updated : p)))}
       />
     </>
   );
