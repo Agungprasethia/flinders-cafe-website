@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import "./DetailMenu.css";
 
-import { getMenus } from "../../services/api";
-
 import imgMenuItem from "../../assets/images/menu-food-gray.png";
 
-const dummyMenuData = [
+const menuData = [
   {
     id: 1,
     name: "CHICKEN PARMIGIANA",
@@ -64,24 +62,6 @@ export default function DetailMenu({ onClose }) {
   const [selectedItem, setSelectedItem] = useState(null);
   const [spicyLevel, setSpicyLevel] = useState(2);
   const [search, setSearch] = useState("");
-  const [menuData, setMenuData] = useState(dummyMenuData);
-
-  useEffect(() => {
-    const fetchMenus = async () => {
-      try {
-        const data = await getMenus();
-        if (data && data.length > 0) {
-          setMenuData(data);
-        } else {
-          setMenuData(dummyMenuData);
-        }
-      } catch (err) {
-        console.warn("[DetailMenu] Backend belum aktif, menggunakan data dummy:", err.message);
-        setMenuData(dummyMenuData);
-      }
-    };
-    fetchMenus();
-  }, []);
 
   useEffect(() => {
     document.body.classList.add("dm-body-lock");

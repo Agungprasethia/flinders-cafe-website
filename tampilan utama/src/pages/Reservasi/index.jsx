@@ -5,7 +5,7 @@ import Step1Tanggal from "./steps/Step1Tanggal";
 import Step2WaktuTamu from "./steps/Step2WaktuTamu";
 import Step3DataPemesan from "./steps/Step3DataPemesan";
 import Step4Konfirmasi from "./steps/Step4Konfirmasi";
-import { submitReservation } from "../../services/api";
+import { apiRequest } from "../../lib/api";
 
 function StepIndicator({ currentStep, lang = "en" }) {
   const steps = [
@@ -60,6 +60,7 @@ export default function ReservasiSection({ lang = "en" }) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const resetForm = () => {
     setTimeout(() => {
@@ -74,24 +75,27 @@ export default function ReservasiSection({ lang = "en" }) {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setSubmitError("");
+
     try {
-      // Kirim data reservasi ke backend
-      await submitReservation({
-        tanggal: selectedDate,
-        waktu: selectedTime,
-        jumlah_tamu: guestCount,
-        nama: formData.name,
-        phone: formData.phone,
-        email: formData.email,
-        catatan: formData.notes,
+      await apiRequest("/api/reservasi", {
+        method: "POST",
+        body: JSON.stringify({
+          tanggal: selectedDate,
+          waktu: selectedTime,
+          jumlahTamu: guestCount,
+          nama: formData.name,
+          whatsapp: formData.phone,
+          email: formData.email,
+          catatan: formData.notes,
+        }),
       });
-    } catch (err) {
-      // Backend belum aktif / error — tetap lanjut ke step konfirmasi
-      console.warn("[Reservasi] Backend belum aktif atau error:", err.message);
-    } finally {
       setIsSubmitting(false);
       setIsSuccess(true);
       setStep(4);
+    } catch (error) {
+      setIsSubmitting(false);
+      setSubmitError(error.message);
     }
   };
 
@@ -146,6 +150,7 @@ export default function ReservasiSection({ lang = "en" }) {
               selectedDate={selectedDate}
               selectedTime={selectedTime}
               guestCount={guestCount}
+              submitError={submitError}
             />
           )}
           {step === 4 && (

@@ -9,6 +9,7 @@ export default function Step3DataPemesan({
   selectedDate,
   selectedTime,
   guestCount,
+  submitError,
 }) {
   const texts = {
     id: {
@@ -118,6 +119,12 @@ export default function Step3DataPemesan({
       >
         <span className="wa-icon">💬</span> {isSubmitting ? t.submitting : t.submit}
       </button>
+
+      {submitError && (
+        <p className="reservasi-note reservasi-note--center">
+          {submitError}
+        </p>
+      )}
 
       <p className="reservasi-note">
         {t.note}

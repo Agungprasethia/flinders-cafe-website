@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { 
   ClipboardList, Coffee, Tag, Layout,
   Plus, Edit2, Trash2, Eye, Star, LogOut, X, Upload, Image,
   ChevronLeft, ChevronRight, Minus, Calendar, Clock, Users, Phone, User
 } from 'lucide-react';
+import { apiRequest } from '../lib/api';
 
-import { getAdminReservations, addAdminReservation } from '../services/api';
-
+// Hapus interface AdminDashboardProps
 export default function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('reservasi');
 
@@ -141,22 +141,6 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
     setJumlahTamu(2);
     setFormData({ nama: '', whatsapp: '', catatan: '' });
     onClose();
-  };
-
-  const handleSimpan = async () => {
-    try {
-      await addAdminReservation({
-        tanggal: selectedDate,
-        waktu: selectedTime,
-        jumlah_tamu: jumlahTamu,
-        nama: formData.nama,
-        whatsapp: formData.whatsapp,
-        catatan: formData.catatan
-      });
-    } catch (err) {
-      console.warn("[Admin Dashboard] Backend error, fallback simulasi sukses:", err.message);
-    }
-    handleReset();
   };
 
   const prevMonth = () => {
@@ -485,7 +469,7 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
             <button
               data-testid="btn-simpan-reservasi"
               disabled={!formData.nama || !formData.whatsapp}
-              onClick={handleSimpan}
+              onClick={handleReset}
               className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
                 formData.nama && formData.whatsapp
                   ? 'bg-[#2E6A67] text-white hover:bg-[#245552] shadow-md'
@@ -506,30 +490,28 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
 // ==========================================
 const ReservasiView = ({ Header }) => {
   const [showTambahReservasi, setShowTambahReservasi] = useState(false);
-  const [reservasiData, setReservasiData] = useState([]);
-
-  const dummyReservasi = [
-    { id: 1, waktu: '26 Mei 2026 13.00', customer: 'Andrew', kontak: '08521138204239', jumlah: 3, status: 'Menunggu', color: 'text-yellow-600 bg-yellow-50' },
-    { id: 2, waktu: '26 Mei 2026 13.00', customer: 'Andrew', kontak: '08521138204239', jumlah: 3, status: 'Selesai', color: 'text-green-600 bg-green-50' },
-    { id: 3, waktu: '26 Mei 2026 13.00', customer: 'Andrew', kontak: '08521138204239', jumlah: 3, status: 'Batal', color: 'text-red-600 bg-red-50' },
-  ];
+  const [reservasi, setReservasi] = useState([]);
 
   useEffect(() => {
-    const fetchReservasi = async () => {
-      try {
-        const data = await getAdminReservations();
-        if (data && data.length > 0) {
-          setReservasiData(data);
-        } else {
-          setReservasiData(dummyReservasi);
-        }
-      } catch (err) {
-        console.warn("[Admin Dashboard] Backend error saat mengambil reservasi:", err.message);
-        setReservasiData(dummyReservasi);
-      }
-    };
-    fetchReservasi();
+    apiRequest('/api/reservasi')
+      .then(setReservasi)
+      .catch(() => setReservasi([]));
   }, []);
+
+  const statusColor = (status) => {
+    if (status === 'Selesai') return 'text-green-600 bg-green-50';
+    if (status === 'Batal') return 'text-red-600 bg-red-50';
+    return 'text-yellow-600 bg-yellow-50';
+  };
+
+  const formatWaktu = (row) => {
+    const tanggal = row.tanggal ? new Date(row.tanggal).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }) : '-';
+    return `${tanggal} ${row.waktu || ''}`;
+  };
 
   return (
     <>
@@ -555,14 +537,14 @@ const ReservasiView = ({ Header }) => {
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
-                {reservasiData.map((row) => (
+                {reservasi.map((row) => (
                   <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="p-4 font-medium text-gray-700">{row.waktu}</td>
-                    <td className="p-4">{row.customer}</td>
-                    <td className="p-4 text-gray-500">{row.kontak}</td>
-                    <td className="p-4 text-center">{row.jumlah}</td>
+                    <td className="p-4 font-medium text-gray-700">{formatWaktu(row)}</td>
+                    <td className="p-4">{row.nama || row.customer}</td>
+                    <td className="p-4 text-gray-500">{row.whatsapp || row.kontak}</td>
+                    <td className="p-4 text-center">{row.jumlahTamu || row.jumlah}</td>
                     <td className="p-4 text-center">
-                      <span className={`px-3 py-1 rounded-full font-semibold text-xs ${row.color}`}>
+                      <span className={`px-3 py-1 rounded-full font-semibold text-xs ${statusColor(row.status)}`}>
                         {row.status}
                       </span>
                     </td>
@@ -591,7 +573,7 @@ const ReservasiView = ({ Header }) => {
 // ==========================================
 // MODAL: TAMBAH MENU
 // ==========================================
-const TambahMenuModal = ({ isOpen, onClose }) => {
+const TambahMenuModal = ({ isOpen, onClose, onCreated }) => {
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     nama: '', kategori: '', harga: '', deskripsi: ''
@@ -609,9 +591,13 @@ const TambahMenuModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleSubmit = () => {
-    // Handle save logic here
-    onClose();
+  const handleSubmit = async () => {
+    const created = await apiRequest('/api/menus', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+    });
+    onCreated(created);
+    handleCancel();
   };
 
   const handleCancel = () => {
@@ -841,7 +827,7 @@ const MenuSelectionModal = ({ isOpen, onClose, selectedMenus, onSave }) => {
 // ==========================================
 // MODAL: TAMBAH PROMO
 // ==========================================
-const TambahPromoModal = ({ isOpen, onClose }) => {
+const TambahPromoModal = ({ isOpen, onClose, onCreated }) => {
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     nama: '', diskon: '', durasi: '', deskripsi: ''
@@ -861,8 +847,20 @@ const TambahPromoModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleSubmit = () => {
-    onClose();
+  const handleSubmit = async () => {
+    const created = await apiRequest('/api/promo', {
+      method: 'POST',
+      body: JSON.stringify({
+        title: formData.nama,
+        discount: formData.diskon,
+        validUntil: formData.durasi,
+        description: formData.deskripsi,
+        items: selectedMenus,
+        active: true,
+      }),
+    });
+    onCreated(created);
+    handleCancel();
   };
 
   const handleCancel = () => {
@@ -990,21 +988,38 @@ const TambahPromoModal = ({ isOpen, onClose }) => {
 };
 
 const MenuView = ({ Header }) => {
-  const [menus, setMenus] = useState([
-    { id: 1, nama: 'Espresso', harga: '35.000', status: 'Tersedia', tersedia: true },
-    { id: 2, nama: 'Americano', harga: '35.000', status: 'Habis', tersedia: false },
-    { id: 3, nama: 'Espresso', harga: '35.000', status: 'Tersedia', tersedia: true },
-  ]);
+  const [menus, setMenus] = useState([]);
   const [showTambahMenu, setShowTambahMenu] = useState(false);
 
-  const toggleStatus = (id) => {
+  useEffect(() => {
+    apiRequest('/api/menus')
+      .then(setMenus)
+      .catch(() => setMenus([]));
+  }, []);
+
+  const toggleStatus = async (id) => {
+    const current = menus.find((menu) => menu.id === id);
+    const available = !(current?.available ?? current?.tersedia);
+    await apiRequest(`/api/menus/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ available }),
+    });
     setMenus(menus.map(menu => {
       if (menu.id === id) {
-        const newStatus = !menu.tersedia;
-        return { ...menu, tersedia: newStatus, status: newStatus ? 'Tersedia' : 'Habis' };
+        return { ...menu, available };
       }
       return menu;
     }));
+  };
+
+  const deleteMenu = async (id) => {
+    await apiRequest(`/api/menus/${id}`, { method: 'DELETE' });
+    setMenus(menus.filter((menu) => menu.id !== id));
+  };
+
+  const formatPrice = (price) => {
+    if (typeof price === 'number') return price.toLocaleString('id-ID');
+    return price;
   };
 
   return (
@@ -1023,20 +1038,20 @@ const MenuView = ({ Header }) => {
             {menus.map((item) => (
               <div key={item.id} className="bg-gray-100 p-4 rounded-xl flex gap-4 relative shadow-sm border border-gray-200">
                 <div className="w-24 h-24 bg-gray-300 rounded-lg flex-shrink-0 flex items-center justify-center text-gray-500 font-light text-xs">
-                  {item.tersedia ? '[Foto]' : '[Kosong]'}
+                  {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" /> : '[Foto]'}
                 </div>
                 <div className="flex flex-col justify-between flex-1">
                   <div>
                     <div className="flex justify-between items-start gap-2">
-                      <h4 className="font-bold text-gray-800">{item.nama}</h4>
+                      <h4 className="font-bold text-gray-800">{item.name || item.nama}</h4>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded flex-shrink-0 ${
-                        item.tersedia ? 'bg-[#2E6A67] text-white' : 'bg-gray-400 text-white'
+                        (item.available ?? item.tersedia) ? 'bg-[#2E6A67] text-white' : 'bg-gray-400 text-white'
                       }`}>
-                        {item.status}
+                        {(item.available ?? item.tersedia) ? 'Tersedia' : 'Habis'}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-700 font-semibold mt-1">{item.harga}</p>
-                    <p className="text-xs text-gray-400 mt-1 line-clamp-1">Deskripsi menu singkat...</p>
+                    <p className="text-sm text-gray-700 font-semibold mt-1">{formatPrice(item.price || item.harga)}</p>
+                    <p className="text-xs text-gray-400 mt-1 line-clamp-1">{item.description || item.deskripsi || 'Deskripsi menu singkat...'}</p>
                   </div>
                   <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
                     <div className="flex items-center gap-2">
@@ -1044,21 +1059,21 @@ const MenuView = ({ Header }) => {
                       <button
                         type="button"
                         role="switch"
-                        aria-checked={item.tersedia}
+                        aria-checked={item.available ?? item.tersedia}
                         data-testid={`toggle-menu-${item.id}`}
                         onClick={() => toggleStatus(item.id)}
                         className={`relative inline-flex h-4 w-8 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                          item.tersedia ? 'bg-[#2E6A67]' : 'bg-gray-300'
+                          (item.available ?? item.tersedia) ? 'bg-[#2E6A67]' : 'bg-gray-300'
                         }`}
                       >
                         <span className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          item.tersedia ? 'translate-x-4' : 'translate-x-0'
+                          (item.available ?? item.tersedia) ? 'translate-x-4' : 'translate-x-0'
                         }`} />
                       </button>
                     </div>
                     <div className="flex gap-3 text-gray-500">
                       <button data-testid={`btn-edit-menu-${item.id}`} className="cursor-pointer hover:text-blue-600 transition-colors"><Edit2 size={14} /></button>
-                      <button data-testid={`btn-delete-menu-${item.id}`} className="cursor-pointer hover:text-red-600 transition-colors"><Trash2 size={14} /></button>
+                      <button data-testid={`btn-delete-menu-${item.id}`} onClick={() => deleteMenu(item.id)} className="cursor-pointer hover:text-red-600 transition-colors"><Trash2 size={14} /></button>
                     </div>
                   </div>
                 </div>
@@ -1069,7 +1084,11 @@ const MenuView = ({ Header }) => {
       </div>
 
       {/* Modal Tambah Menu */}
-      <TambahMenuModal isOpen={showTambahMenu} onClose={() => setShowTambahMenu(false)} />
+      <TambahMenuModal
+        isOpen={showTambahMenu}
+        onClose={() => setShowTambahMenu(false)}
+        onCreated={(menu) => setMenus((current) => [...current, menu])}
+      />
     </>
   );
 };
@@ -1079,6 +1098,18 @@ const MenuView = ({ Header }) => {
 // ==========================================
 const PromoView = ({ Header }) => {
   const [showTambahPromo, setShowTambahPromo] = useState(false);
+  const [promos, setPromos] = useState([]);
+
+  useEffect(() => {
+    apiRequest('/api/promo')
+      .then(setPromos)
+      .catch(() => setPromos([]));
+  }, []);
+
+  const deletePromo = async (id) => {
+    await apiRequest(`/api/promo/${id}`, { method: 'DELETE' });
+    setPromos(promos.filter((promo) => promo.id !== id));
+  };
 
   return (
     <>
@@ -1090,26 +1121,26 @@ const PromoView = ({ Header }) => {
             <Plus size={18} /> Tambah Promo
           </button>
         </div>
-        <p className="text-sm text-gray-500 mb-6">Total Promo Aktif : 2</p>
+        <p className="text-sm text-gray-500 mb-6">Total Promo Aktif : {promos.length}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[1, 2].map((id) => (
-            <div key={id} className="bg-gray-100 p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col gap-4">
+          {promos.map((promo) => (
+            <div key={promo.id} className="bg-gray-100 p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col gap-4">
               <div className="w-full h-40 bg-gray-300 rounded-lg flex items-center justify-center text-gray-400 text-sm relative">
-                [Banner Promo]
+                {promo.image ? <img src={promo.image} alt={promo.title} className="w-full h-full object-cover rounded-lg" /> : '[Banner Promo]'}
                 <span className="absolute top-3 right-3 bg-[#2E6A67] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">Tersedia</span>
               </div>
               <div>
-                <h4 className="font-bold text-gray-800 text-base">Valentine Deals</h4>
-                <p className="text-xs text-gray-400 mt-1">Deskripsi promo menarik disematkan disini...</p>
+                <h4 className="font-bold text-gray-800 text-base">{promo.title || promo.nama}</h4>
+                <p className="text-xs text-gray-400 mt-1">{promo.description || promo.deskripsi}</p>
                 <p className="text-[11px] text-gray-500 font-medium mt-2 bg-gray-200 inline-block px-2 py-1 rounded">
-                  10 February 2026 - 15 February 2026
+                  {promo.validUntil || promo.durasi || '-'}
                 </p>
               </div>
               <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                <button data-testid={`btn-status-promo-${id}`} className="bg-[#2E6A67] text-white text-xs px-4 py-1.5 rounded-md font-medium hover:bg-opacity-90 transition-all">Aktif</button>
+                <button data-testid={`btn-status-promo-${promo.id}`} className="bg-[#2E6A67] text-white text-xs px-4 py-1.5 rounded-md font-medium hover:bg-opacity-90 transition-all">Aktif</button>
                 <div className="flex gap-3 text-gray-500">
-                  <button data-testid={`btn-edit-promo-${id}`} className="cursor-pointer hover:text-blue-600 transition-colors"><Edit2 size={16} /></button>
-                  <button data-testid={`btn-delete-promo-${id}`} className="cursor-pointer hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
+                  <button data-testid={`btn-edit-promo-${promo.id}`} className="cursor-pointer hover:text-blue-600 transition-colors"><Edit2 size={16} /></button>
+                  <button data-testid={`btn-delete-promo-${promo.id}`} onClick={() => deletePromo(promo.id)} className="cursor-pointer hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
                 </div>
               </div>
             </div>
@@ -1118,7 +1149,11 @@ const PromoView = ({ Header }) => {
       </div>
 
       {/* Modal Tambah Promo */}
-      <TambahPromoModal isOpen={showTambahPromo} onClose={() => setShowTambahPromo(false)} />
+      <TambahPromoModal
+        isOpen={showTambahPromo}
+        onClose={() => setShowTambahPromo(false)}
+        onCreated={(promo) => setPromos((current) => [...current, promo])}
+      />
     </>
   );
 };

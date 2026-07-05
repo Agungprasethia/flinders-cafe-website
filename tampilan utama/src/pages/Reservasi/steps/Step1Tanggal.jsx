@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   MONTHS,
   DAYS,
-  FULL_DATES as DUMMY_FULL_DATES,
-  AVAILABLE_DATES as DUMMY_AVAILABLE_DATES,
+  FULL_DATES,
+  AVAILABLE_DATES,
 } from "../../../constants";
-import { checkAvailability } from "../../../services/api";
 
 function formatDate(date) {
   if (!date) return "";
@@ -18,45 +17,8 @@ export default function Step1Tanggal({ lang = "en", onNext, selectedDate, onSele
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
 
-  // State untuk menyimpan data dari API (atau fallback dummy)
-  const [fullDates, setFullDates] = useState(DUMMY_FULL_DATES);
-  const [availableDates, setAvailableDates] = useState(DUMMY_AVAILABLE_DATES);
-
   const firstDay = new Date(viewYear, viewMonth, 1).getDay();
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-
-  useEffect(() => {
-    const fetchAvailability = async () => {
-      try {
-        const data = await checkAvailability(viewMonth, viewYear);
-        if (data && data.length > 0) {
-          // Backend mengirimkan status ketersediaan per tanggal.
-          // Misal format data dari backend: [{ date: "2026-07-03", status: "tersedia" | "penuh" }]
-          const full = [];
-          const avail = [];
-          data.forEach(item => {
-            const dateObj = new Date(item.date);
-            const day = dateObj.getDate();
-            if (item.status === "penuh") {
-              full.push(day);
-            } else if (item.status === "tersedia") {
-              avail.push(day);
-            }
-          });
-          setFullDates(full);
-          setAvailableDates(avail);
-        } else {
-          setFullDates(DUMMY_FULL_DATES);
-          setAvailableDates(DUMMY_AVAILABLE_DATES);
-        }
-      } catch (err) {
-        console.warn("[Reservasi/Step1] Backend belum aktif, menggunakan data dummy:", err.message);
-        setFullDates(DUMMY_FULL_DATES);
-        setAvailableDates(DUMMY_AVAILABLE_DATES);
-      }
-    };
-    fetchAvailability();
-  }, [viewMonth, viewYear]);
 
   const prevMonth = () => {
     if (viewMonth === 0) {
@@ -72,7 +34,7 @@ export default function Step1Tanggal({ lang = "en", onNext, selectedDate, onSele
   };
 
   const handleSelect = (day) => {
-    if (fullDates.includes(day)) return;
+    if (FULL_DATES.includes(day)) return;
     const d = new Date(viewYear, viewMonth, day);
     if (d < new Date(today.getFullYear(), today.getMonth(), today.getDate()))
       return;
@@ -153,7 +115,7 @@ export default function Step1Tanggal({ lang = "en", onNext, selectedDate, onSele
             .fill(null)
             .map((_, i) => {
               const day = i + 1;
-              const full = fullDates.includes(day);
+              const full = FULL_DATES.includes(day);
               const past = isPast(day);
               const selected = isSelected(day);
               return (
@@ -168,7 +130,7 @@ export default function Step1Tanggal({ lang = "en", onNext, selectedDate, onSele
                   disabled={full || past}
                 >
                   {day}
-                  {!full && !past && availableDates.includes(day) && (
+                  {!full && !past && AVAILABLE_DATES.includes(day) && (
                     <span className="reservasi-calendar__dot reservasi-calendar__dot--available" />
                   )}
                   {full && (

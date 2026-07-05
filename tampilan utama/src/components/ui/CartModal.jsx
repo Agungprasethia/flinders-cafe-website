@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./CartModal.css";
 import { IMAGES } from "../../constants";
-import { submitOrder, WA_NUMBER } from "../../services/api";
+import { apiRequest } from "../../lib/api";
 
 export default function CartModal({ lang = "en", isOpen, onClose }) {
   const texts = {
@@ -111,23 +111,19 @@ export default function CartModal({ lang = "en", isOpen, onClose }) {
     text += `\nTax & Service (10%): ${formatPrice(tax)}`;
     text += `\nTotal: ${formatPrice(total)}`;
 
-    try {
-      // Coba simpan ke backend dulu
-      await submitOrder({
-        nama_customer: formData.name,
-        nomor_meja: formData.table,
-        items: items.map(item => ({
-          menu_id: item.id,
-          quantity: item.quantity,
-          harga_satuan: item.price
-        }))
-      });
-    } catch (err) {
-      console.warn("[Cart] Backend belum aktif atau error:", err.message);
-    }
+    await apiRequest("/api/orders", {
+      method: "POST",
+      body: JSON.stringify({
+        nama: formData.name,
+        meja: formData.table,
+        items,
+        subtotal,
+        tax,
+        total,
+      }),
+    }).catch(() => null);
 
-    // Tetap buka WA terlepas backend sukses/gagal
-    const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
+    const waUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(text)}`;
     window.open(waUrl, "_blank");
     onClose();
   };
