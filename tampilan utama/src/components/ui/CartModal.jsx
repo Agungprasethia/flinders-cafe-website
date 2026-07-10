@@ -3,7 +3,7 @@ import "./CartModal.css";
 import { IMAGES } from "../../constants";
 import { apiRequest } from "../../lib/api";
 
-export default function CartModal({ lang = "en", isOpen, onClose }) {
+export default function CartModal({ lang = "en", isOpen, onClose, items = [], setItems }) {
   const texts = {
     id: {
       title: "Keranjang Saya",
@@ -37,9 +37,6 @@ export default function CartModal({ lang = "en", isOpen, onClose }) {
   const t = texts[lang] || texts.en;
   const [step, setStep] = useState(1); // 1 = Keranjang, 2 = Konfirmasi
   const [formData, setFormData] = useState({ name: "", table: "" });
-  
-  // Dummy data matching the Figma design
-  const [items, setItems] = useState([]);
 
   useEffect(() => {
     if (isOpen) {

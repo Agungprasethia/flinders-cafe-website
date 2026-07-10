@@ -541,6 +541,51 @@ app.put('/api/halaman', async (req, res) => {
   }
 });
 
+app.get('/api/jadwal', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('halaman').select('*').eq('id', 'jadwal').single();
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return res.json([]);
+      }
+      throw error;
+    }
+    const closedDates = data.about?.closedDates || [];
+    res.json(closedDates);
+  } catch (error) {
+    console.error('Error fetching schedule:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/jadwal', async (req, res) => {
+  try {
+    const closedDates = req.body.closedDates || [];
+    const { data: current, error: getErr } = await supabase.from('halaman').select('*').eq('id', 'jadwal').single();
+    
+    let query;
+    if (getErr && getErr.code === 'PGRST116') {
+      query = supabase.from('halaman').insert({
+        id: 'jadwal',
+        about: { closedDates },
+        updated_at: new Date().toISOString()
+      });
+    } else {
+      query = supabase.from('halaman').update({
+        about: { closedDates },
+        updated_at: new Date().toISOString()
+      }).eq('id', 'jadwal');
+    }
+    
+    const { error } = await query;
+    if (error) throw error;
+    res.json({ success: true, closedDates });
+  } catch (error) {
+    console.error('Error updating schedule:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.post('/api/upload', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'Tidak ada file yang diupload' });
   const imageUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;

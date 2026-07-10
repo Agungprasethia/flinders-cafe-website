@@ -61,6 +61,17 @@ export default function ReservasiSection({ lang = "en" }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [closedDates, setClosedDates] = useState([]);
+
+  React.useEffect(() => {
+    apiRequest('/api/jadwal')
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setClosedDates(data);
+        }
+      })
+      .catch((err) => console.error('Error fetching closed dates:', err));
+  }, []);
 
   const resetForm = () => {
     setTimeout(() => {
@@ -124,6 +135,7 @@ export default function ReservasiSection({ lang = "en" }) {
               onNext={() => setStep(2)}
               selectedDate={selectedDate}
               onSelectDate={setSelectedDate}
+              closedDates={closedDates}
             />
           )}
           {step === 2 && (

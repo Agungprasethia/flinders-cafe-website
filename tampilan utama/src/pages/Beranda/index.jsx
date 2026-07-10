@@ -9,7 +9,7 @@ import AboutSection from "./sections/AboutSection";
 import DetailMenu from "../../components/ui/DetailMenu";
 import MenuDetailModal from "../../components/ui/MenuDetailModal";
 
-export default function Beranda({ lang, toggleLang, onCartClick }) {
+export default function Beranda({ lang, toggleLang, onCartClick, onAddToCart }) {
   const [showFullMenu, setShowFullMenu] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState(null);
 
@@ -46,6 +46,7 @@ export default function Beranda({ lang, toggleLang, onCartClick }) {
           lang={lang}
           menu={selectedMenu}
           onClose={() => setSelectedMenu(null)}
+          onAddToCart={onAddToCart}
           onCartClick={() => {
             setSelectedMenu(null);
             onCartClick();

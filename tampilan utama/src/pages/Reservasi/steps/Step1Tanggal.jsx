@@ -12,7 +12,7 @@ function formatDate(date) {
   return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-export default function Step1Tanggal({ lang = "en", onNext, selectedDate, onSelectDate }) {
+export default function Step1Tanggal({ lang = "en", onNext, selectedDate, onSelectDate, closedDates = [] }) {
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -34,7 +34,9 @@ export default function Step1Tanggal({ lang = "en", onNext, selectedDate, onSele
   };
 
   const handleSelect = (day) => {
-    if (FULL_DATES.includes(day)) return;
+    const pad = (num) => String(num).padStart(2, '0');
+    const dateStr = `${viewYear}-${pad(viewMonth + 1)}-${pad(day)}`;
+    if (FULL_DATES.includes(day) || closedDates.includes(dateStr)) return;
     const d = new Date(viewYear, viewMonth, day);
     if (d < new Date(today.getFullYear(), today.getMonth(), today.getDate()))
       return;
@@ -115,7 +117,9 @@ export default function Step1Tanggal({ lang = "en", onNext, selectedDate, onSele
             .fill(null)
             .map((_, i) => {
               const day = i + 1;
-              const full = FULL_DATES.includes(day);
+              const pad = (num) => String(num).padStart(2, '0');
+              const dateStr = `${viewYear}-${pad(viewMonth + 1)}-${pad(day)}`;
+              const full = FULL_DATES.includes(day) || closedDates.includes(dateStr);
               const past = isPast(day);
               const selected = isSelected(day);
               return (

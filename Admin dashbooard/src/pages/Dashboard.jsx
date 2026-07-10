@@ -103,7 +103,7 @@ export default function AdminDashboard({ onLogout }) {
     <div className="flex bg-[#F5F5F5] min-h-screen font-sans antialiased text-gray-800">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-y-auto h-screen">
-        {activeTab === 'reservasi' && <ReservasiView Header={Header} />}
+        {activeTab === 'reservasi' && <ReservasiView Header={Header} setActiveTab={setActiveTab} />}
         {activeTab === 'menu' && <MenuView Header={Header} />}
         {activeTab === 'promo' && <PromoView Header={Header} />}
         {activeTab === 'halaman' && <HalamanView Header={Header} />}
@@ -115,7 +115,7 @@ export default function AdminDashboard({ onLogout }) {
 // ==========================================
 // MODAL: TAMBAH RESERVASI (3 STEPS)
 // ==========================================
-const TambahReservasiModal = ({ isOpen, onClose }) => {
+const TambahReservasiModal = ({ isOpen, onClose, onCreated }) => {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -125,6 +125,19 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
   });
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [closedDates, setClosedDates] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      apiRequest('/api/jadwal')
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setClosedDates(data);
+          }
+        })
+        .catch((err) => console.error('Error fetching closed dates:', err));
+    }
+  }, [isOpen]);
 
   const timeSlots = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
 
@@ -141,6 +154,36 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
     setJumlahTamu(2);
     setFormData({ nama: '', whatsapp: '', catatan: '' });
     onClose();
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const pad = (num) => String(num).padStart(2, '0');
+      const dateStr = `${currentYear}-${pad(currentMonth + 1)}-${pad(selectedDate)}`;
+      
+      const payload = {
+        tanggal: dateStr,
+        waktu: selectedTime,
+        jumlahTamu: jumlahTamu,
+        nama: formData.nama,
+        whatsapp: formData.whatsapp,
+        catatan: formData.catatan,
+        status: 'Pending'
+      };
+
+      await apiRequest('/api/reservasi', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      if (onCreated) {
+        onCreated();
+      }
+      handleReset();
+    } catch (err) {
+      console.error('Gagal menyimpan reservasi:', err);
+      alert('Gagal menyimpan reservasi');
+    }
   };
 
   const prevMonth = () => {
@@ -173,6 +216,12 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
     return checkDate < today;
   };
 
+  const isClosedDate = (day) => {
+    const pad = (num) => String(num).padStart(2, '0');
+    const dateStr = `${currentYear}-${pad(currentMonth + 1)}-${pad(day)}`;
+    return closedDates.includes(dateStr);
+  };
+
   const formatSelectedDate = () => {
     if (!selectedDate) return '';
     const date = new Date(currentYear, currentMonth, selectedDate);
@@ -191,15 +240,17 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const past = isPastDate(day);
+      const closed = isClosedDate(day);
       const selected = selectedDate === day;
       const today = isToday(day);
       cells.push(
         <button
           key={day}
-          disabled={past}
+          disabled={past || closed}
           onClick={() => setSelectedDate(day)}
           className={`w-9 h-9 rounded-full text-sm font-medium transition-all flex items-center justify-center
-            ${past ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer hover:bg-[#2E6A67]/10'}
+            ${past || closed ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer hover:bg-[#2E6A67]/10'}
+            ${closed ? 'bg-red-50 text-red-400 border border-red-200' : ''}
             ${selected ? 'bg-[#2E6A67] text-white shadow-md' : ''}
             ${today && !selected ? 'ring-2 ring-[#2E6A67] text-[#2E6A67] font-bold' : ''}
           `}
@@ -469,7 +520,7 @@ const TambahReservasiModal = ({ isOpen, onClose }) => {
             <button
               data-testid="btn-simpan-reservasi"
               disabled={!formData.nama || !formData.whatsapp}
-              onClick={handleReset}
+              onClick={handleSubmit}
               className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
                 formData.nama && formData.whatsapp
                   ? 'bg-[#2E6A67] text-white hover:bg-[#245552] shadow-md'
@@ -584,17 +635,214 @@ const DetailReservasiModal = ({ isOpen, onClose, reservasi, onStatusChange }) =>
 };
 
 // ==========================================
+// MODAL: KELOLA JADWAL (OPERASIONAL / TUTUP)
+// ==========================================
+const KelolaJadwalModal = ({ isOpen, onClose }) => {
+  const [closedDates, setClosedDates] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+  const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+  useEffect(() => {
+    if (isOpen) {
+      apiRequest('/api/jadwal')
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setClosedDates(data);
+          }
+        })
+        .catch((err) => console.error('Error fetching closed dates:', err));
+    }
+  }, [isOpen]);
+
+  const getDaysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
+  const getFirstDayOfMonth = (month, year) => new Date(year, month, 1).getDay();
+
+  const handleReset = () => {
+    onClose();
+  };
+
+  const prevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const nextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
+
+  const isToday = (day) => {
+    const today = new Date();
+    return day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
+  };
+
+  const handleDayClick = (day) => {
+    const pad = (num) => String(num).padStart(2, '0');
+    const dateStr = `${currentYear}-${pad(currentMonth + 1)}-${pad(day)}`;
+    if (closedDates.includes(dateStr)) {
+      setClosedDates(closedDates.filter(d => d !== dateStr));
+    } else {
+      setClosedDates([...closedDates, dateStr]);
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await apiRequest('/api/jadwal', {
+        method: 'POST',
+        body: JSON.stringify({ closedDates }),
+      });
+      alert('Jadwal operasional berhasil diperbarui!');
+      onClose();
+    } catch (err) {
+      console.error('Error saving schedule:', err);
+      alert('Gagal memperbarui jadwal operasional');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const renderCalendar = () => {
+    const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+    const firstDay = getFirstDayOfMonth(currentMonth, currentYear);
+    const cells = [];
+    const pad = (num) => String(num).padStart(2, '0');
+
+    for (let i = 0; i < firstDay; i++) {
+      cells.push(<div key={`empty-${i}`} />);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${currentYear}-${pad(currentMonth + 1)}-${pad(day)}`;
+      const isClosed = closedDates.includes(dateStr);
+      const today = isToday(day);
+      
+      cells.push(
+        <button
+          key={day}
+          type="button"
+          onClick={() => handleDayClick(day)}
+          className={`w-10 h-10 rounded-full text-xs font-semibold transition-all flex flex-col items-center justify-center relative cursor-pointer
+            ${isClosed 
+              ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100' 
+              : 'bg-teal-50 text-[#2E6A67] border border-teal-100 hover:bg-teal-100'}
+            ${today ? 'ring-2 ring-[#2E6A67] font-bold' : ''}
+          `}
+        >
+          <span>{day}</span>
+          <span className={`text-[7px] font-bold mt-[-2px] uppercase ${isClosed ? 'text-red-500' : 'text-teal-600'}`}>
+            {isClosed ? 'Tutup' : 'Buka'}
+          </span>
+        </button>
+      );
+    }
+    return cells;
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleReset} />
+
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-modalIn overflow-hidden">
+        {/* Header */}
+        <div className="bg-[#2E6A67] text-white px-6 py-5 relative text-center">
+          <button
+            onClick={handleReset}
+            className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
+          >
+            <X size={20} />
+          </button>
+          <h2 className="text-lg font-bold">Kelola Jadwal Operasional</h2>
+          <p className="text-white/70 text-xs mt-1">Tentukan tanggal buka atau tutup cafe untuk reservasi.</p>
+        </div>
+
+        {/* Calendar Body */}
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+              <ChevronLeft size={20} className="text-gray-500" />
+            </button>
+            <span className="font-semibold text-gray-700">{monthNames[currentMonth]} {currentYear}</span>
+            <button onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+              <ChevronRight size={20} className="text-gray-500" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 mb-2 text-center">
+            {dayNames.map((d) => (
+              <div key={d} className="text-xs font-semibold text-gray-400 py-1">{d}</div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 mb-6">
+            {renderCalendar()}
+          </div>
+
+          {/* Legend */}
+          <div className="flex items-center gap-6 text-xs text-gray-500 mb-6 justify-center border-t pt-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3.5 h-3.5 rounded-full bg-teal-50 border border-teal-100" />
+              <span className="font-medium text-gray-600">Buka (Tersedia)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3.5 h-3.5 rounded-full bg-red-50 border border-red-200" />
+              <span className="font-medium text-gray-600">Tutup (Tidak Bisa Booking)</span>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleReset}
+              className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors"
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex-1 py-2.5 bg-[#2E6A67] text-white rounded-xl text-sm font-semibold hover:bg-[#245552] transition-colors shadow-md disabled:opacity-50"
+            >
+              {isSaving ? 'Menyimpan...' : 'Simpan Jadwal'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
 // TAB 1: KELOLA RESERVASI
 // ==========================================
-const ReservasiView = ({ Header }) => {
+const ReservasiView = ({ Header, setActiveTab }) => {
   const [showTambahReservasi, setShowTambahReservasi] = useState(false);
+  const [showKelolaJadwal, setShowKelolaJadwal] = useState(false);
   const [selectedReservasi, setSelectedReservasi] = useState(null);
   const [reservasi, setReservasi] = useState([]);
 
-  useEffect(() => {
+  const fetchReservasi = () => {
     apiRequest('/api/reservasi')
       .then(setReservasi)
       .catch(() => setReservasi([]));
+  };
+
+  useEffect(() => {
+    fetchReservasi();
   }, []);
 
   const statusColor = (status) => {
@@ -618,7 +866,7 @@ const ReservasiView = ({ Header }) => {
       <div className="p-8">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-center mb-6">
-            <button data-testid="link-kelola-jadwal" className="text-gray-500 font-medium underline cursor-pointer hover:text-gray-700">kelola jadwal</button>
+            <button data-testid="link-kelola-jadwal" onClick={() => setShowKelolaJadwal(true)} className="text-gray-500 font-medium underline cursor-pointer hover:text-gray-700">kelola jadwal</button>
             <button data-testid="btn-tambah-reservasi" onClick={() => setShowTambahReservasi(true)} className="text-[#2E6A67] font-medium underline flex items-center gap-1 hover:text-teal-800">
               <Plus size={16} /> tambah reservasi
             </button>
@@ -665,7 +913,17 @@ const ReservasiView = ({ Header }) => {
       </div>
 
       {/* Modal Tambah Reservasi */}
-      <TambahReservasiModal isOpen={showTambahReservasi} onClose={() => setShowTambahReservasi(false)} />
+      <TambahReservasiModal 
+        isOpen={showTambahReservasi} 
+        onClose={() => setShowTambahReservasi(false)} 
+        onCreated={fetchReservasi}
+      />
+
+      {/* Modal Kelola Jadwal */}
+      <KelolaJadwalModal 
+        isOpen={showKelolaJadwal} 
+        onClose={() => setShowKelolaJadwal(false)} 
+      />
 
       {/* Modal Detail Reservasi */}
       <DetailReservasiModal 
@@ -686,12 +944,29 @@ const ReservasiView = ({ Header }) => {
 // ==========================================
 // MODAL: TAMBAH MENU
 // ==========================================
-const TambahMenuModal = ({ isOpen, onClose, onCreated }) => {
+const TambahMenuModal = ({ isOpen, onClose, onCreated, menuToEdit, onUpdated }) => {
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
-    nama: '', kategori: '', harga: '', deskripsi: ''
+    nama: '', kategori: '', harga: '', deskripsi: '', bestSeller: false, recommended: false
   });
   const [previewImage, setPreviewImage] = useState(null);
+
+  useEffect(() => {
+    if (menuToEdit) {
+      setFormData({
+        nama: menuToEdit.name || menuToEdit.nama || '',
+        kategori: menuToEdit.category || menuToEdit.kategori || '',
+        harga: menuToEdit.price || menuToEdit.harga || '',
+        deskripsi: menuToEdit.description || menuToEdit.deskripsi || '',
+        bestSeller: menuToEdit.bestSeller ?? menuToEdit.best_seller ?? false,
+        recommended: menuToEdit.recommended ?? menuToEdit.is_recommended ?? false,
+      });
+      setPreviewImage(menuToEdit.image || null);
+    } else {
+      setFormData({ nama: '', kategori: '', harga: '', deskripsi: '', bestSeller: false, recommended: false });
+      setPreviewImage(null);
+    }
+  }, [menuToEdit, isOpen]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -705,16 +980,35 @@ const TambahMenuModal = ({ isOpen, onClose, onCreated }) => {
   };
 
   const handleSubmit = async () => {
-    const created = await apiRequest('/api/menus', {
-      method: 'POST',
-      body: JSON.stringify(formData),
-    });
-    onCreated(created);
-    handleCancel();
+    try {
+      const payload = {
+        ...formData,
+        bestSeller: formData.bestSeller,
+        recommended: formData.recommended,
+      };
+
+      if (menuToEdit) {
+        const updated = await apiRequest(`/api/menus/${menuToEdit.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+        });
+        if (onUpdated) onUpdated(updated);
+      } else {
+        const created = await apiRequest('/api/menus', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        if (onCreated) onCreated(created);
+      }
+      handleCancel();
+    } catch (err) {
+      console.error('Gagal menyimpan menu:', err);
+      alert('Gagal menyimpan menu');
+    }
   };
 
   const handleCancel = () => {
-    setFormData({ nama: '', kategori: '', harga: '', deskripsi: '' });
+    setFormData({ nama: '', kategori: '', harga: '', deskripsi: '', bestSeller: false, recommended: false });
     setPreviewImage(null);
     onClose();
   };
@@ -727,10 +1021,10 @@ const TambahMenuModal = ({ isOpen, onClose, onCreated }) => {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCancel} />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 animate-modalIn">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 animate-modalIn max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-8 pt-7 pb-2">
-          <h2 className="text-xl font-bold text-[#2E6A67]">Tambah Menu</h2>
+          <h2 className="text-xl font-bold text-[#2E6A67]">{menuToEdit ? 'Edit Menu' : 'Tambah Menu'}</h2>
           <button
             data-testid="btn-close-modal-menu"
             onClick={handleCancel}
@@ -800,6 +1094,47 @@ const TambahMenuModal = ({ isOpen, onClose, onCreated }) => {
               className="flex-1 bg-gray-100 rounded-lg px-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-[#2E6A67] focus:ring-1 focus:ring-[#2E6A67]/20 transition-all resize-none"
               placeholder="Deskripsi menu"
             />
+          </div>
+
+          {/* Best Seller & Recommended Toggles */}
+          <div className="flex items-center gap-6">
+            <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Status</label>
+            <div className="flex flex-col gap-3 flex-1">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={formData.bestSeller}
+                  data-testid="toggle-best-seller"
+                  onClick={() => setFormData({ ...formData, bestSeller: !formData.bestSeller })}
+                  className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    formData.bestSeller ? 'bg-[#2E6A67]' : 'bg-gray-300'
+                  }`}
+                >
+                  <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    formData.bestSeller ? 'translate-x-5' : 'translate-x-0'
+                  }`} />
+                </button>
+                <span className="text-sm text-gray-700 font-medium">Best Seller</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={formData.recommended}
+                  data-testid="toggle-recommended"
+                  onClick={() => setFormData({ ...formData, recommended: !formData.recommended })}
+                  className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    formData.recommended ? 'bg-yellow-400' : 'bg-gray-300'
+                  }`}
+                >
+                  <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    formData.recommended ? 'translate-x-5' : 'translate-x-0'
+                  }`} />
+                </button>
+                <span className="text-sm text-gray-700 font-medium">Rekomendasi</span>
+              </label>
+            </div>
           </div>
 
           {/* Media Gambar */}
@@ -1130,6 +1465,7 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
 const MenuView = ({ Header }) => {
   const [menus, setMenus] = useState([]);
   const [showTambahMenu, setShowTambahMenu] = useState(false);
+  const [menuToEdit, setMenuToEdit] = useState(null);
 
   useEffect(() => {
     apiRequest('/api/menus')
@@ -1152,9 +1488,35 @@ const MenuView = ({ Header }) => {
     }));
   };
 
+  const toggleRecommended = async (id) => {
+    const current = menus.find((menu) => menu.id === id);
+    const recommended = !(current?.recommended);
+    try {
+      await apiRequest(`/api/menus/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ recommended }),
+      });
+      setMenus(menus.map(menu => {
+        if (menu.id === id) {
+          return { ...menu, recommended };
+        }
+        return menu;
+      }));
+    } catch (err) {
+      console.error('Gagal mengubah status rekomendasi:', err);
+    }
+  };
+
   const deleteMenu = async (id) => {
+    const confirmed = window.confirm('Apakah Anda yakin ingin menghapus menu ini?');
+    if (!confirmed) return;
     await apiRequest(`/api/menus/${id}`, { method: 'DELETE' });
     setMenus(menus.filter((menu) => menu.id !== id));
+  };
+
+  const handleEditMenu = (item) => {
+    setMenuToEdit(item);
+    setShowTambahMenu(true);
   };
 
   const formatPrice = (price) => {
@@ -1162,72 +1524,108 @@ const MenuView = ({ Header }) => {
     return price;
   };
 
+  // Group menus by category
+  const categoryLabels = {
+    'kopi': 'Kopi',
+    'non-kopi': 'Non-Kopi',
+    'makanan': 'Makanan',
+    'food': 'Makanan',
+    'snack': 'Snack',
+    'dessert': 'Dessert & Snack',
+    'dessert & snack': 'Dessert & Snack',
+    'drink': 'Minuman',
+  };
+
+  const groupedMenus = menus.reduce((groups, item) => {
+    const cat = (item.category || item.kategori || 'lainnya').toLowerCase();
+    const label = categoryLabels[cat] || cat.charAt(0).toUpperCase() + cat.slice(1);
+    if (!groups[label]) groups[label] = [];
+    groups[label].push(item);
+    return groups;
+  }, {});
+
+  const renderMenuCard = (item) => (
+    <div key={item.id} className="bg-gray-100 p-4 rounded-xl flex gap-4 relative shadow-sm border border-gray-200">
+      <div className="w-24 h-24 bg-gray-300 rounded-lg flex-shrink-0 flex items-center justify-center text-gray-500 font-light text-xs">
+        {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" /> : '[Foto]'}
+      </div>
+      <div className="flex flex-col justify-between flex-1">
+        <div>
+          <div className="flex justify-between items-start gap-2">
+            <h4 className="font-bold text-gray-800">{item.name || item.nama}</h4>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded flex-shrink-0 ${
+              (item.available ?? item.tersedia) ? 'bg-[#2E6A67] text-white' : 'bg-gray-400 text-white'
+            }`}>
+              {(item.available ?? item.tersedia) ? 'Tersedia' : 'Habis'}
+            </span>
+          </div>
+          <p className="text-sm text-gray-700 font-semibold mt-1">{formatPrice(item.price || item.harga)}</p>
+          <p className="text-xs text-gray-400 mt-1 line-clamp-1">{item.description || item.deskripsi || 'Deskripsi menu singkat...'}</p>
+        </div>
+        <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
+          <div className="flex items-center gap-2">
+            <Star 
+              size={16} 
+              className={`cursor-pointer transition-colors ${
+                item.recommended ? 'text-yellow-400 fill-yellow-400' : 'text-gray-400 hover:text-yellow-400'
+              }`} 
+              data-testid={`icon-star-${item.id}`}
+              onClick={() => toggleRecommended(item.id)}
+            />
+            <button
+              type="button"
+              role="switch"
+              aria-checked={item.available ?? item.tersedia}
+              data-testid={`toggle-menu-${item.id}`}
+              onClick={() => toggleStatus(item.id)}
+              className={`relative inline-flex h-4 w-8 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                (item.available ?? item.tersedia) ? 'bg-[#2E6A67]' : 'bg-gray-300'
+              }`}
+            >
+              <span className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                (item.available ?? item.tersedia) ? 'translate-x-4' : 'translate-x-0'
+              }`} />
+            </button>
+          </div>
+          <div className="flex gap-3 text-gray-500">
+            <button data-testid={`btn-edit-menu-${item.id}`} onClick={() => handleEditMenu(item)} className="cursor-pointer hover:text-blue-600 transition-colors"><Edit2 size={14} /></button>
+            <button data-testid={`btn-delete-menu-${item.id}`} onClick={() => deleteMenu(item.id)} className="cursor-pointer hover:text-red-600 transition-colors"><Trash2 size={14} /></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <Header title="Kelola Menu" />
       <div className="p-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-700">Manajemen Menu</h2>
-          <button data-testid="btn-tambah-menu" onClick={() => setShowTambahMenu(true)} className="bg-[#2E6A67] text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium shadow hover:bg-opacity-90 transition-all">
+          <button data-testid="btn-tambah-menu" onClick={() => { setMenuToEdit(null); setShowTambahMenu(true); }} className="bg-[#2E6A67] text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium shadow hover:bg-opacity-90 transition-all">
             <Plus size={18} /> tambah menu
           </button>
         </div>
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-600 mb-4 border-b pb-2">Kopi</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {menus.map((item) => (
-              <div key={item.id} className="bg-gray-100 p-4 rounded-xl flex gap-4 relative shadow-sm border border-gray-200">
-                <div className="w-24 h-24 bg-gray-300 rounded-lg flex-shrink-0 flex items-center justify-center text-gray-500 font-light text-xs">
-                  {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" /> : '[Foto]'}
-                </div>
-                <div className="flex flex-col justify-between flex-1">
-                  <div>
-                    <div className="flex justify-between items-start gap-2">
-                      <h4 className="font-bold text-gray-800">{item.name || item.nama}</h4>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded flex-shrink-0 ${
-                        (item.available ?? item.tersedia) ? 'bg-[#2E6A67] text-white' : 'bg-gray-400 text-white'
-                      }`}>
-                        {(item.available ?? item.tersedia) ? 'Tersedia' : 'Habis'}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-700 font-semibold mt-1">{formatPrice(item.price || item.harga)}</p>
-                    <p className="text-xs text-gray-400 mt-1 line-clamp-1">{item.description || item.deskripsi || 'Deskripsi menu singkat...'}</p>
-                  </div>
-                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
-                    <div className="flex items-center gap-2">
-                      <Star size={16} className="text-gray-400 cursor-pointer hover:text-yellow-400 transition-colors" data-testid={`icon-star-${item.id}`} />
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={item.available ?? item.tersedia}
-                        data-testid={`toggle-menu-${item.id}`}
-                        onClick={() => toggleStatus(item.id)}
-                        className={`relative inline-flex h-4 w-8 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                          (item.available ?? item.tersedia) ? 'bg-[#2E6A67]' : 'bg-gray-300'
-                        }`}
-                      >
-                        <span className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          (item.available ?? item.tersedia) ? 'translate-x-4' : 'translate-x-0'
-                        }`} />
-                      </button>
-                    </div>
-                    <div className="flex gap-3 text-gray-500">
-                      <button data-testid={`btn-edit-menu-${item.id}`} className="cursor-pointer hover:text-blue-600 transition-colors"><Edit2 size={14} /></button>
-                      <button data-testid={`btn-delete-menu-${item.id}`} onClick={() => deleteMenu(item.id)} className="cursor-pointer hover:text-red-600 transition-colors"><Trash2 size={14} /></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {Object.entries(groupedMenus).map(([categoryLabel, items]) => (
+          <div key={categoryLabel} className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-600 mb-4 border-b pb-2">{categoryLabel}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {items.map(renderMenuCard)}
+            </div>
           </div>
-        </div>
+        ))}
+        {menus.length === 0 && (
+          <div className="text-center text-gray-400 py-10">Belum ada menu. Klik "tambah menu" untuk membuat menu baru.</div>
+        )}
       </div>
 
-      {/* Modal Tambah Menu */}
+      {/* Modal Tambah/Edit Menu */}
       <TambahMenuModal
         isOpen={showTambahMenu}
-        onClose={() => setShowTambahMenu(false)}
+        onClose={() => { setShowTambahMenu(false); setMenuToEdit(null); }}
+        menuToEdit={menuToEdit}
         onCreated={(menu) => setMenus((current) => [...current, menu])}
+        onUpdated={(updated) => setMenus((current) => current.map((m) => (m.id === updated.id ? updated : m)))}
       />
     </>
   );

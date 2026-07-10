@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./MenuDetailModal.css";
 
-export default function MenuDetailModal({ menu, lang = "en", onClose, onCartClick }) {
+export default function MenuDetailModal({ menu, lang = "en", onClose, onCartClick, onAddToCart }) {
   const [quantity, setQuantity] = useState(1);
 
   const increment = () => setQuantity((q) => q + 1);
@@ -90,16 +90,28 @@ export default function MenuDetailModal({ menu, lang = "en", onClose, onCartClic
 
           <div className="mdm-actions">
             <div className="mdm-quantity">
-              <button className="mdm-qty-btn" onClick={decrement}>
+              <button className="mdm-qty-btn" onClick={decrement} disabled={menu.available === false}>
                 -
               </button>
               <span className="mdm-qty-value">{quantity}</span>
-              <button className="mdm-qty-btn" onClick={increment}>
+              <button className="mdm-qty-btn" onClick={increment} disabled={menu.available === false}>
                 +
               </button>
             </div>
-            <button className="mdm-cart-btn" onClick={onCartClick}>
-              + Keranjang
+            <button 
+              className="mdm-cart-btn" 
+              onClick={() => {
+                if (menu.available !== false) {
+                  if (onAddToCart) {
+                    onAddToCart(menu, quantity);
+                  }
+                  onCartClick();
+                }
+              }}
+              disabled={menu.available === false}
+              style={menu.available === false ? { backgroundColor: '#888', cursor: 'not-allowed', opacity: 0.6 } : {}}
+            >
+              {menu.available === false ? (lang === "id" ? "Habis" : "Sold Out") : "+ Keranjang"}
             </button>
           </div>
         </div>

@@ -3,7 +3,7 @@ import { IMAGES } from "../../../constants";
 import PromoDetailModal from "../../../components/ui/PromoDetailModal";
 import { apiRequest } from "../../../lib/api";
 
-export default function MenuSection({ onMenuSelect }) {
+export default function MenuSection({ lang = "en", onMenuSelect }) {
   const [activeCategory, setActiveCategory] = useState("all menu");
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [menus, setMenus] = useState([]);
@@ -123,24 +123,45 @@ export default function MenuSection({ onMenuSelect }) {
         </div>
 
         <div className="menu-section__grid">
-          {menus.map((item) => (
-            <div
-              key={item.id}
-              className="menu-card"
-              onClick={() => onMenuSelect && onMenuSelect(item)}
-            >
-              <div className="menu-card__img-wrap">
-                <img src={item.image || IMAGES.menuFood} alt={item.name} className="menu-card__img" />
+          {menus.map((item) => {
+            const isAvailable = item.available !== false;
+            return (
+              <div
+                key={item.id}
+                className="menu-card"
+                onClick={() => isAvailable && onMenuSelect && onMenuSelect(item)}
+                style={!isAvailable ? { opacity: 0.6, cursor: "not-allowed" } : {}}
+              >
+                <div className="menu-card__img-wrap" style={{ position: "relative" }}>
+                  <img src={item.image || IMAGES.menuFood} alt={item.name} className="menu-card__img" />
+                  {!isAvailable && (
+                    <div style={{
+                      position: "absolute",
+                      top: "10px",
+                      right: "10px",
+                      backgroundColor: "rgba(220, 38, 38, 0.9)",
+                      color: "white",
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      fontSize: "10px",
+                      fontWeight: "bold",
+                      textTransform: "uppercase",
+                      fontFamily: "DM Sans, sans-serif"
+                    }}>
+                      {lang === "id" ? "Habis" : "Sold Out"}
+                    </div>
+                  )}
+                </div>
+                <div className="menu-card__info">
+                  <span className="menu-card__name">
+                    <span className="txt-regular-black">{item.name}</span>
+                    {item.recommended && <span className="menu-card__star">★</span>}
+                  </span>
+                  <span className="menu-card__price">{formatPrice(item.price)}</span>
+                </div>
               </div>
-              <div className="menu-card__info">
-                <span className="menu-card__name">
-                  <span className="txt-regular-black">{item.name}</span>
-                  {item.recommended && <span className="menu-card__star">★</span>}
-                </span>
-                <span className="menu-card__price">{formatPrice(item.price)}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
