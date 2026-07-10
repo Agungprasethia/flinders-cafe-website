@@ -162,46 +162,42 @@
   background: var(--white);
   border-radius: var(--radius-lg);
   width: 90%;
-  max-width: 860px;
-  padding: 32px 32px 40px;
+  max-width: 600px; /* Reduced width to match the taller/narrower look in the image */
+  padding: 32px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 24px 60px rgba(0,0,0,0.4);
 }
 
-.dp-back-btn {
-  position: absolute;
-  top: 20px;
-  left: 24px;
-  background: var(--white);
-  border: none;
-  border-radius: var(--radius-lg);
-  width: 53px;
-  height: 46px;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 600;
-  font-size: 28px;
-  color: #000;
-  cursor: pointer;
+.dp-modal-content {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: background 0.2s;
-  z-index: 10;
+  flex-direction: column;
 }
 
-.dp-back-btn:hover {
-  background: #f0f0f0;
+.dp-back-btn {
+  background: transparent;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  color: #000;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.dp-detail-top {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .dp-detail-image-wrap {
-  border: 3px solid var(--teal);
-  border-radius: 19px;
+  flex: 1;
+  border-radius: 16px;
   overflow: hidden;
-  height: 420px;
-  margin-top: 8px;
-  margin-bottom: 28px;
+  height: 300px;
 }
 
 .dp-detail-image {
@@ -211,63 +207,132 @@
   display: block;
 }
 
-.dp-detail-info {
-  padding: 0 8px;
-}
-
-.dp-detail-title {
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 700;
-  font-size: 32px;
-  color: #000;
-  margin: 0 0 6px;
-  letter-spacing: 1.6px;
-}
-
-.dp-detail-price {
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 700;
-  font-size: 24px;
-  color: var(--teal);
-  margin: 0 0 16px;
-}
-
-.dp-detail-desc {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 16px;
-  color: #444;
-  line-height: 1.6;
-  margin: 0 0 16px;
-}
-
-.dp-detail-items {
-  list-style: disc;
-  padding-left: 20px;
-  margin: 0;
-}
-
-.dp-detail-items li {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 6px;
-  line-height: 1.5;
-}
-
 /* Scrollbar decoration */
 .dp-scrollbar-track {
-  width: 15px;
-  position: absolute;
-  right: 24px;
-  top: 80px;
-  bottom: 40px;
-  background: #bbc5d5;
-  border-radius: 35px;
+  width: 12px;
+  background: #cbd5e1;
+  border-radius: 12px;
+  height: 100%;
+  position: relative;
 }
 
 .dp-scrollbar-thumb {
   width: 100%;
-  height: 80px;
-  background: var(--teal);
-  border-radius: 35px;
+  height: 40%;
+  background: #94a3b8;
+  border-radius: 12px;
+  position: absolute;
+  top: 0;
+}
+
+.dp-detail-info {
+  padding: 0;
+}
+
+.dp-detail-title {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 400;
+  font-size: 32px;
+  color: #000;
+  margin: 0 0 12px;
+  letter-spacing: 0.5px;
+}
+
+.dp-detail-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 32px;
+}
+
+.dp-detail-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dp-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dp-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dp-item-name {
+  font-size: 20px;
+}
+
+.dp-item-name-italic {
+  font-family: 'Times New Roman', Times, serif;
+  font-style: italic;
+  color: #3f7466; /* dark teal */
+}
+
+.dp-item-name-bold {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: bold;
+  color: #b58d66; /* gold/brown */
+}
+
+.dp-item-price {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  color: #b58d66;
+  font-weight: 500;
+}
+
+.dp-item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dp-qty-btn {
+  background: #3f7466;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.dp-qty-val {
+  color: #3f7466;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.dp-detail-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 40px;
+}
+
+.dp-cart-btn {
+  background: #3f7466;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.dp-cart-btn:hover {
+  opacity: 0.9;
 }

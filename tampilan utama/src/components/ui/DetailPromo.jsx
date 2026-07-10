@@ -21,10 +21,10 @@ const promoList = [
     description:
       "Paket spesial untuk berdua. Nikmati momen bersama dengan menu pilihan terbaik dari dapur kami.",
     items: [
-      "Spaghetti Bolognese",
-      "Mushroom Stuffed Chicken",
-      "Lava Cake",
-      "Iced Tea",
+      { name: "Spaghetti Bolognese", price: "Rp.55,000" },
+      { name: "Mushroom Stuffed Chicken", price: "Rp.75,000" },
+      { name: "Lava Cake", price: "Rp.35,000" },
+      { name: "Iced Tea", price: "Rp.15,000" },
     ],
   },
   {
@@ -35,10 +35,10 @@ const promoList = [
     description:
       "Jelajahi cita rasa Asia yang otentik dengan paduan bumbu pilihan chef kami.",
     items: [
-      "Tom Yum Soup",
-      "Nasi Goreng Spesial",
-      "Dim Sum Basket",
-      "Thai Iced Tea",
+      { name: "Tom Yum Soup", price: "Rp.45,000" },
+      { name: "Nasi Goreng Spesial", price: "Rp.40,000" },
+      { name: "Dim Sum Basket", price: "Rp.35,000" },
+      { name: "Thai Iced Tea", price: "Rp.20,000" },
     ],
   },
   {
@@ -49,10 +49,10 @@ const promoList = [
     description:
       "Paket makan siang hemat dan mengenyangkan, cocok untuk break di tengah hari.",
     items: [
-      "Main Course pilihan",
-      "Sup Sayuran",
-      "Es Teh Manis",
-      "Dessert of the Day",
+      { name: "Main Course pilihan", price: "Rp.50,000" },
+      { name: "Sup Sayuran", price: "Rp.20,000" },
+      { name: "Es Teh Manis", price: "Rp.10,000" },
+      { name: "Dessert of the Day", price: "Rp.25,000" },
     ],
   },
   {
@@ -62,7 +62,12 @@ const promoList = [
     image: imgPadels,
     description:
       "Paket kolaborasi spesial untuk kamu yang aktif. Makan sehat setelah sesi olahraga.",
-    items: ["Salad Bowl", "Grilled Chicken", "Smoothie Bowl", "Mineral Water"],
+    items: [
+      { name: "Salad Bowl", price: "Rp.65,000" },
+      { name: "Grilled Chicken", price: "Rp.75,000" },
+      { name: "Smoothie Bowl", price: "Rp.55,000" },
+      { name: "Mineral Water", price: "Rp.15,000" },
+    ],
   },
 ];
 
@@ -78,34 +83,56 @@ export default function DetailPromo({ onClose }) {
         </div>
 
         <div className="dp-detail-modal">
-          <button
-            className="dp-back-btn"
-            onClick={() => setSelectedPromo(null)}
-          >
-            &lt;
-          </button>
+          <div className="dp-modal-content">
+            <button
+              className="dp-back-btn"
+              onClick={() => setSelectedPromo(null)}
+            >
+              &lt;
+            </button>
 
-          <div className="dp-detail-image-wrap">
-            <img
-              src={selectedPromo.image}
-              alt={selectedPromo.title}
-              className="dp-detail-image"
-            />
-          </div>
+            <div className="dp-detail-top">
+              <div className="dp-detail-image-wrap">
+                <img
+                  src={selectedPromo.image}
+                  alt={selectedPromo.title}
+                  className="dp-detail-image"
+                />
+              </div>
+              <div className="dp-scrollbar-track">
+                <div className="dp-scrollbar-thumb" />
+              </div>
+            </div>
 
-          <div className="dp-detail-info">
-            <h2 className="dp-detail-title">{selectedPromo.title}</h2>
-            <p className="dp-detail-price">{selectedPromo.price}</p>
-            <p className="dp-detail-desc">{selectedPromo.description}</p>
-            <ul className="dp-detail-items">
-              {selectedPromo.items.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
-          </div>
+            <div className="dp-detail-info">
+              <h2 className="dp-detail-title">{selectedPromo.title.toLowerCase()}</h2>
+              <p className="dp-detail-desc">
+                Bikin momen kumpul atau me-time kamu makin sempurna tanpa bikin kantong bolong. Sekarang kamu bisa nikmatin kombinasi lengkap dengan minuman segarnya cuma seharga {selectedPromo.price} Hemat hingga 25%
+              </p>
+              
+              <div className="dp-detail-items-list">
+                {selectedPromo.items.map((item, i) => (
+                  <div className="dp-item-row" key={i}>
+                    <div className="dp-item-info">
+                      <div className="dp-item-name">
+                        <span className="dp-item-name-italic">{item.name.split(' ').slice(0, -1).join(' ')}</span>
+                        <span className="dp-item-name-bold"> {item.name.split(' ').slice(-1)}</span>
+                      </div>
+                      <div className="dp-item-price">{item.price}</div>
+                    </div>
+                    <div className="dp-item-quantity">
+                      <button className="dp-qty-btn">-</button>
+                      <span className="dp-qty-val">2</span>
+                      <button className="dp-qty-btn">+</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-          <div className="dp-scrollbar-track">
-            <div className="dp-scrollbar-thumb" />
+              <div className="dp-detail-footer">
+                <button className="dp-cart-btn">+ keranjang</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
