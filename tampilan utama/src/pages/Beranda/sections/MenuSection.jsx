@@ -3,7 +3,7 @@ import { IMAGES } from "../../../constants";
 import PromoDetailModal from "../../../components/ui/PromoDetailModal";
 import { apiRequest } from "../../../lib/api";
 
-export default function MenuSection({ lang = "en", onMenuSelect }) {
+export default function MenuSection({ lang = "en", onMenuSelect, onAddToCart, onCartClick }) {
   const [activeCategory, setActiveCategory] = useState("all menu");
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [menus, setMenus] = useState([]);
@@ -57,13 +57,7 @@ export default function MenuSection({ lang = "en", onMenuSelect }) {
   };
 
   const openPromo = (promo) => {
-    setSelectedPromo({
-      title: promo.title || promo.nama || "Promo",
-      price: promo.discount || promo.price || "",
-      image: promo.image || IMAGES.promo1,
-      description: promo.description || promo.deskripsi || "",
-      items: (promo.items || []).map((item) => item.name || item),
-    });
+    setSelectedPromo(promo);
   };
 
   return (
@@ -169,6 +163,11 @@ export default function MenuSection({ lang = "en", onMenuSelect }) {
         <PromoDetailModal
           promo={selectedPromo}
           onClose={() => setSelectedPromo(null)}
+          onAddToCart={onAddToCart}
+          onCartClick={() => {
+            setSelectedPromo(null);
+            onCartClick && onCartClick();
+          }}
         />
       )}
     </section>

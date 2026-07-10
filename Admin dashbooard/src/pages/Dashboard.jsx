@@ -1278,7 +1278,7 @@ const MenuSelectionModal = ({ isOpen, onClose, selectedMenus, onSave }) => {
 const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }) => {
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
-    nama: '', diskon: '', durasi: '', deskripsi: ''
+    nama: '', diskon: '', durasi: '', deskripsi: '', startTime: '', endTime: ''
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [selectedMenus, setSelectedMenus] = useState([]);
@@ -1290,12 +1290,14 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
         nama: promoToEdit.title || promoToEdit.nama || '',
         diskon: promoToEdit.discount || promoToEdit.diskon || '',
         durasi: promoToEdit.validUntil || promoToEdit.durasi || '',
-        deskripsi: promoToEdit.description || promoToEdit.deskripsi || ''
+        deskripsi: promoToEdit.description || promoToEdit.deskripsi || '',
+        startTime: promoToEdit.startTime || '',
+        endTime: promoToEdit.endTime || ''
       });
       setPreviewImage(promoToEdit.image || null);
       setSelectedMenus(promoToEdit.items || []);
     } else {
-      setFormData({ nama: '', diskon: '', durasi: '', deskripsi: '' });
+      setFormData({ nama: '', diskon: '', durasi: '', deskripsi: '', startTime: '', endTime: '' });
       setPreviewImage(null);
       setSelectedMenus([]);
     }
@@ -1318,6 +1320,8 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
       discount: formData.diskon,
       validUntil: formData.durasi,
       description: formData.deskripsi,
+      startTime: formData.startTime || null,
+      endTime: formData.endTime || null,
       items: selectedMenus,
       active: promoToEdit ? promoToEdit.active : true,
     };
@@ -1339,7 +1343,7 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
   };
 
   const handleCancel = () => {
-    setFormData({ nama: '', diskon: '', durasi: '', deskripsi: '' });
+    setFormData({ nama: '', diskon: '', durasi: '', deskripsi: '', startTime: '', endTime: '' });
     setPreviewImage(null);
     setSelectedMenus([]);
     onClose();
@@ -1383,7 +1387,24 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
               <input
                 type="text" name="durasi" value={formData.durasi} onChange={handleChange}
                 className="w-48 bg-gray-100 rounded-md px-4 py-2 border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20"
+                placeholder="Contoh: 10/08/2026"
               />
+            </div>
+
+            {/* Jadwal Harian */}
+            <div className="flex items-center gap-6">
+              <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Jam Aktif</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="time" name="startTime" value={formData.startTime} onChange={handleChange}
+                  className="bg-gray-100 rounded-md px-3 py-2 border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20"
+                />
+                <span className="text-gray-500 text-sm font-medium">s/d</span>
+                <input
+                  type="time" name="endTime" value={formData.endTime} onChange={handleChange}
+                  className="bg-gray-100 rounded-md px-3 py-2 border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20"
+                />
+              </div>
             </div>
 
             <div className="flex items-start gap-6">
@@ -1664,6 +1685,8 @@ const PromoView = ({ Header }) => {
         discount: promo.discount || promo.diskon,
         validUntil: promo.validUntil || promo.durasi,
         description: promo.description || promo.deskripsi,
+        startTime: promo.startTime || null,
+        endTime: promo.endTime || null,
         items: promo.items,
         active,
       }),
@@ -1694,9 +1717,21 @@ const PromoView = ({ Header }) => {
               <div>
                 <h4 className="font-bold text-gray-800 text-base">{promo.title || promo.nama}</h4>
                 <p className="text-xs text-gray-400 mt-1">{promo.description || promo.deskripsi}</p>
-                <p className="text-[11px] text-gray-500 font-medium mt-2 bg-gray-200 inline-block px-2 py-1 rounded">
-                  {promo.validUntil || promo.durasi || '-'}
-                </p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {promo.validUntil && (
+                    <span className="text-[11px] text-gray-500 font-medium bg-gray-200 inline-block px-2 py-1 rounded">
+                      📅 {promo.validUntil}
+                    </span>
+                  )}
+                  {promo.startTime && promo.endTime && (
+                    <span className="text-[11px] text-[#2E6A67] font-bold bg-[#2E6A67]/10 inline-block px-2 py-1 rounded">
+                      ⏰ {promo.startTime} - {promo.endTime}
+                    </span>
+                  )}
+                  {!promo.validUntil && !promo.startTime && (
+                    <span className="text-[11px] text-gray-500 font-medium bg-gray-200 inline-block px-2 py-1 rounded">-</span>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                 <button 

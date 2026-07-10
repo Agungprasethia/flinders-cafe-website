@@ -76,13 +76,33 @@ const mapMenuToDb = (body) => {
 
 const mapPromoFromDb = (p) => {
   if (!p) return null;
+
+  // Parse valid_until: could be JSON with schedule or plain date string
+  let startTime = null;
+  let endTime = null;
+  let validUntilDisplay = p.valid_until;
+  if (p.valid_until) {
+    try {
+      const parsed = JSON.parse(p.valid_until);
+      if (parsed && typeof parsed === 'object') {
+        startTime = parsed.startTime || null;
+        endTime = parsed.endTime || null;
+        validUntilDisplay = parsed.validUntil || null;
+      }
+    } catch (e) {
+      // Not JSON, keep as plain date string
+    }
+  }
+
   return {
     id: p.id,
     title: p.title,
     description: p.description,
     discount: p.discount,
     image: p.image,
-    validUntil: p.valid_until,
+    validUntil: validUntilDisplay,
+    startTime,
+    endTime,
     active: p.active,
     items: p.items || [],
     createdAt: p.created_at,
@@ -95,9 +115,27 @@ const mapPromoToDb = (body) => {
   if (body.description !== undefined || body.deskripsi !== undefined) payload.description = body.description ?? body.deskripsi;
   if (body.discount !== undefined || body.diskon !== undefined) payload.discount = body.discount ?? body.diskon;
   if (body.image !== undefined) payload.image = body.image;
-  if (body.validUntil !== undefined || body.durasi !== undefined || body.valid_until !== undefined) {
-    payload.valid_until = body.validUntil ?? body.durasi ?? body.valid_until;
+
+  // Encode startTime/endTime into valid_until as JSON
+  const hasSchedule = body.startTime !== undefined || body.endTime !== undefined || body.start_time !== undefined || body.end_time !== undefined;
+  const hasValidUntil = body.validUntil !== undefined || body.durasi !== undefined || body.valid_until !== undefined;
+
+  if (hasSchedule || hasValidUntil) {
+    const scheduleObj = {};
+    if (body.startTime || body.start_time) scheduleObj.startTime = body.startTime ?? body.start_time;
+    if (body.endTime || body.end_time) scheduleObj.endTime = body.endTime ?? body.end_time;
+    if (body.validUntil || body.durasi || body.valid_until) {
+      scheduleObj.validUntil = body.validUntil ?? body.durasi ?? body.valid_until;
+    }
+
+    // Only store as JSON if we have schedule data, otherwise keep plain string
+    if (scheduleObj.startTime || scheduleObj.endTime) {
+      payload.valid_until = JSON.stringify(scheduleObj);
+    } else if (scheduleObj.validUntil) {
+      payload.valid_until = scheduleObj.validUntil;
+    }
   }
+
   if (body.active !== undefined) payload.active = body.active;
   if (body.items !== undefined) payload.items = body.items;
   return payload;
@@ -312,6 +350,25 @@ app.delete('/api/menus/:id', async (req, res) => {
   }
 });
 
+// Helper: check if current time is within a daily time range (HH:MM format)
+const isWithinTimeRange = (startTime, endTime) => {
+  if (!startTime || !endTime) return true; // no schedule = always active
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const [startH, startM] = startTime.split(':').map(Number);
+  const [endH, endM] = endTime.split(':').map(Number);
+  const startMinutes = startH * 60 + (startM || 0);
+  const endMinutes = endH * 60 + (endM || 0);
+
+  if (startMinutes <= endMinutes) {
+    // Normal range, e.g. 08:00 - 17:00
+    return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+  } else {
+    // Overnight range, e.g. 22:00 - 06:00
+    return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+  }
+};
+
 app.get('/api/promo', async (req, res) => {
   try {
     let query = supabase.from('promos').select('*');
@@ -322,7 +379,15 @@ app.get('/api/promo', async (req, res) => {
 
     const { data, error } = await query;
     if (error) throw error;
-    res.json(data.map(mapPromoFromDb));
+
+    let promos = data.map(mapPromoFromDb);
+
+    // Filter by daily time schedule when requesting active promos
+    if (req.query.active === 'true') {
+      promos = promos.filter(p => isWithinTimeRange(p.startTime, p.endTime));
+    }
+
+    res.json(promos);
   } catch (error) {
     console.error('Error fetching promos:', error);
     res.status(500).json({ message: error.message });

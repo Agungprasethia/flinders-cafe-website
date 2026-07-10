@@ -32,7 +32,12 @@ export default function Beranda({ lang, toggleLang, onCartClick, onAddToCart }) 
         onMenuClick={() => setShowFullMenu(true)}
         onCartClick={onCartClick}
       />
-      <MenuSection lang={lang} onMenuSelect={(item) => setSelectedMenu(item)} />
+      <MenuSection 
+        lang={lang} 
+        onMenuSelect={(item) => setSelectedMenu(item)} 
+        onAddToCart={onAddToCart}
+        onCartClick={onCartClick}
+      />
       <ReservasiSection lang={lang} />
       <FlindersGallery lang={lang} />
       <AboutSection lang={lang} />

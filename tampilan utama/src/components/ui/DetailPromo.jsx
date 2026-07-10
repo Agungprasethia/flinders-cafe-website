@@ -14,67 +14,43 @@ const imgPadels =
 
 const promoList = [
   {
-    id: 1,
+    id: "promo-1",
     title: "Couple Combo",
-    price: "150K++",
+    description: "Paket spesial untuk berdua. Nikmati momen bersama dengan menu pilihan terbaik dari dapur kami.",
+    discount: "25%",
     image: imgCoupleCombo,
-    description:
-      "Paket spesial untuk berdua. Nikmati momen bersama dengan menu pilihan terbaik dari dapur kami.",
-    items: [
-      { name: "Spaghetti Bolognese", price: "Rp.55,000" },
-      { name: "Mushroom Stuffed Chicken", price: "Rp.75,000" },
-      { name: "Lava Cake", price: "Rp.35,000" },
-      { name: "Iced Tea", price: "Rp.15,000" },
-    ],
+    items: JSON.stringify([
+      { id: 1, name: "Spaghetti Bolognese", price: "Rp.55,000" },
+      { id: 2, name: "Mushroom Stuffed Chicken", price: "Rp.75,000" },
+      { id: 3, name: "Lava Cake", price: "Rp.35,000" },
+      { id: 4, name: "Iced Tea", price: "Rp.15,000" },
+    ]),
   },
   {
-    id: 2,
-    title: "Asian Flavours",
-    price: "120K++",
-    image: imgAsianFlavours,
-    description:
-      "Jelajahi cita rasa Asia yang otentik dengan paduan bumbu pilihan chef kami.",
-    items: [
-      { name: "Tom Yum Soup", price: "Rp.45,000" },
-      { name: "Nasi Goreng Spesial", price: "Rp.40,000" },
-      { name: "Dim Sum Basket", price: "Rp.35,000" },
-      { name: "Thai Iced Tea", price: "Rp.20,000" },
-    ],
-  },
-  {
-    id: 3,
-    title: "Lunch Package",
-    price: "85K++",
-    image: imgLunchPackage,
-    description:
-      "Paket makan siang hemat dan mengenyangkan, cocok untuk break di tengah hari.",
-    items: [
-      { name: "Main Course pilihan", price: "Rp.50,000" },
-      { name: "Sup Sayuran", price: "Rp.20,000" },
-      { name: "Es Teh Manis", price: "Rp.10,000" },
-      { name: "Dessert of the Day", price: "Rp.25,000" },
-    ],
-  },
-  {
-    id: 4,
-    title: "Padels & Pilates",
-    price: "200K++",
-    image: imgPadels,
-    description:
-      "Paket kolaborasi spesial untuk kamu yang aktif. Makan sehat setelah sesi olahraga.",
-    items: [
-      { name: "Salad Bowl", price: "Rp.65,000" },
-      { name: "Grilled Chicken", price: "Rp.75,000" },
-      { name: "Smoothie Bowl", price: "Rp.55,000" },
-      { name: "Mineral Water", price: "Rp.15,000" },
-    ],
+    id: "promo-cd042624-6041-4688-a2a0-6085395eeabd",
+    title: "Sunday Promo",
+    description: "Promo makanan hari minggu",
+    discount: "10%",
+    image: null,
+    valid_until: "10/08/2026",
+    active: true,
+    items: "[{\"id\": 4, \"name\": \"mie goreng spesial\", \"price\": \"55k\", \"category\": \"food\"}, {\"id\": 3, \"name\": \"ice latte\", \"price\": \"55k\", \"category\": \"drink\"}]",
   },
 ];
 
-export default function DetailPromo({ onClose }) {
+export default function DetailPromo({ onClose, promos = promoList }) {
   const [selectedPromo, setSelectedPromo] = useState(null);
 
   if (selectedPromo) {
+    let parsedItems = [];
+    try {
+      parsedItems = typeof selectedPromo.items === 'string' 
+        ? JSON.parse(selectedPromo.items) 
+        : (selectedPromo.items || []);
+    } catch(e) {
+      console.error("Error parsing items JSON", e);
+    }
+
     return (
       <div className="dp-overlay">
         <div className="dp-bg-blur">
@@ -94,7 +70,7 @@ export default function DetailPromo({ onClose }) {
             <div className="dp-detail-top">
               <div className="dp-detail-image-wrap">
                 <img
-                  src={selectedPromo.image}
+                  src={selectedPromo.image || imgBackground}
                   alt={selectedPromo.title}
                   className="dp-detail-image"
                 />
@@ -107,26 +83,33 @@ export default function DetailPromo({ onClose }) {
             <div className="dp-detail-info">
               <h2 className="dp-detail-title">{selectedPromo.title.toLowerCase()}</h2>
               <p className="dp-detail-desc">
-                Bikin momen kumpul atau me-time kamu makin sempurna tanpa bikin kantong bolong. Sekarang kamu bisa nikmatin kombinasi lengkap dengan minuman segarnya cuma seharga {selectedPromo.price} Hemat hingga 25%
+                {selectedPromo.description}
+                {selectedPromo.discount && <span style={{display: 'block', marginTop: '8px', fontWeight: 'bold', color: '#3f7466'}}>Diskon: {selectedPromo.discount}</span>}
               </p>
-              
+
               <div className="dp-detail-items-list">
-                {selectedPromo.items.map((item, i) => (
-                  <div className="dp-item-row" key={i}>
-                    <div className="dp-item-info">
-                      <div className="dp-item-name">
-                        <span className="dp-item-name-italic">{item.name.split(' ').slice(0, -1).join(' ')}</span>
-                        <span className="dp-item-name-bold"> {item.name.split(' ').slice(-1)}</span>
+                {parsedItems.map((item, i) => {
+                  const words = (item.name || '').split(' ');
+                  const italicPart = words.length > 1 ? words.slice(0, -1).join(' ') : words[0];
+                  const boldPart = words.length > 1 ? words.slice(-1) : '';
+
+                  return (
+                    <div className="dp-item-row" key={item.id || i}>
+                      <div className="dp-item-info">
+                        <div className="dp-item-name">
+                          <span className="dp-item-name-italic">{italicPart}</span>
+                          {boldPart && <span className="dp-item-name-bold"> {boldPart}</span>}
+                        </div>
+                        <div className="dp-item-price">{item.price}</div>
                       </div>
-                      <div className="dp-item-price">{item.price}</div>
+                      <div className="dp-item-quantity">
+                        <button className="dp-qty-btn">-</button>
+                        <span className="dp-qty-val">2</span>
+                        <button className="dp-qty-btn">+</button>
+                      </div>
                     </div>
-                    <div className="dp-item-quantity">
-                      <button className="dp-qty-btn">-</button>
-                      <span className="dp-qty-val">2</span>
-                      <button className="dp-qty-btn">+</button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="dp-detail-footer">
@@ -160,20 +143,20 @@ export default function DetailPromo({ onClose }) {
         </div>
 
         <div className="dp-promo-grid">
-          {promoList.map((promo) => (
+          {promos.map((promo) => (
             <div
               key={promo.id}
               className="dp-promo-card"
               onClick={() => setSelectedPromo(promo)}
             >
               <img
-                src={promo.image}
+                src={promo.image || imgBackground}
                 alt={promo.title}
                 className="dp-card-img"
               />
               <div className="dp-card-overlay">
                 <span className="dp-card-title">{promo.title}</span>
-                <span className="dp-card-price">{promo.price}</span>
+                {promo.discount && <span className="dp-card-price">Diskon {promo.discount}</span>}
               </div>
             </div>
           ))}
