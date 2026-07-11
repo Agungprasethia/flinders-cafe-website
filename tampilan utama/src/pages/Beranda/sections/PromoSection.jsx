@@ -30,7 +30,7 @@ export default function PromoSection({ lang = "en" }) {
       price: promo.discount || promo.price || "",
       image: promo.image || IMAGES.promo1,
       description: promo.description || promo.deskripsi || "",
-      items: (promo.items || []).map((item) => item.name || item),
+      items: promo.items || [],
     });
   };
 

@@ -7,6 +7,7 @@ const imgBackground = IMAGES.promo1;
 
 export default function PromoDetailModal({ promo, onClose, onAddToCart, onCartClick }) {
   const [quantities, setQuantities] = useState({});
+  const [activeBundleId, setActiveBundleId] = useState(null);
 
   useEffect(() => {
     // Lock body scroll when modal is open
@@ -34,6 +35,25 @@ export default function PromoDetailModal({ promo, onClose, onAddToCart, onCartCl
     ];
   }
 
+  const isBundlePromo = Array.isArray(parsedItems) && parsedItems.length > 0 && parsedItems[0].isBundle === true;
+
+  // Set default active bundle
+  useEffect(() => {
+    if (isBundlePromo) {
+      setActiveBundleId(parsedItems[0].id);
+    } else {
+      setActiveBundleId(null);
+    }
+  }, [promo, isBundlePromo]);
+
+  const activeBundle = isBundlePromo 
+    ? parsedItems.find(b => b.id === activeBundleId) || parsedItems[0] 
+    : null;
+
+  const displayedItems = isBundlePromo 
+    ? (activeBundle?.items || []) 
+    : parsedItems;
+
   // --- Mathematical Logic ---
   const parsePrice = (priceStr) => {
     if (priceStr === undefined || priceStr === null) return 0;
@@ -60,7 +80,7 @@ export default function PromoDetailModal({ promo, onClose, onAddToCart, onCartCl
 
   const calculateTotal = () => {
     let total = 0;
-    parsedItems.forEach((item, i) => {
+    displayedItems.forEach((item, i) => {
       total += parsePrice(item.price) * getQty(item.id || i);
     });
     return total;
@@ -79,7 +99,7 @@ export default function PromoDetailModal({ promo, onClose, onAddToCart, onCartCl
     }
   };
 
-  const rawTotal = calculateTotal();
+  const rawTotal = isBundlePromo ? parsePrice(activeBundle?.price || 0) : calculateTotal();
   const finalTotal = applyDiscount(rawTotal);
 
   const formatPrice = (num) => `Rp.${num.toLocaleString("id-ID")}`;
@@ -126,8 +146,35 @@ export default function PromoDetailModal({ promo, onClose, onAddToCart, onCartCl
               {promo.discount && <span style={{display: 'block', marginTop: '8px', fontWeight: 'bold', color: '#3f7466'}}>Diskon: {promo.discount}</span>}
             </p>
 
+            {/* Dynamic Bundle Tabs */}
+            {isBundlePromo && (
+              <div className="dp-bundle-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
+                {parsedItems.map(bundle => (
+                  <button
+                    key={bundle.id}
+                    onClick={() => setActiveBundleId(bundle.id)}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '20px',
+                      border: activeBundleId === bundle.id ? '2px solid #3f7466' : '1px solid #ddd',
+                      backgroundColor: activeBundleId === bundle.id ? '#3f7466' : 'white',
+                      color: activeBundleId === bundle.id ? 'white' : '#666',
+                      fontWeight: 'bold',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s ease',
+                      outline: 'none'
+                    }}
+                  >
+                    {bundle.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="dp-detail-items-list">
-              {parsedItems.map((item, i) => {
+              {displayedItems.map((item, i) => {
                 const words = (item.name || '').split(' ');
                 const italicPart = words.length > 1 ? words.slice(0, -1).join(' ') : words[0];
                 const boldPart = words.length > 1 ? words.slice(-1) : '';
@@ -139,16 +186,23 @@ export default function PromoDetailModal({ promo, onClose, onAddToCart, onCartCl
                         <span className="dp-item-name-italic">{italicPart}</span>
                         {boldPart && <span className="dp-item-name-bold"> {boldPart}</span>}
                       </div>
-                      <div className="dp-item-price">{formatItemPrice(item.price)}</div>
+                      {!isBundlePromo && <div className="dp-item-price">{formatItemPrice(item.price)}</div>}
                     </div>
-                    <div className="dp-item-quantity">
-                      <button className="dp-qty-btn" onClick={() => handleDecrement(item.id || i)}>-</button>
-                      <span className="dp-qty-val">{getQty(item.id || i)}</span>
-                      <button className="dp-qty-btn" onClick={() => handleIncrement(item.id || i)}>+</button>
-                    </div>
+                    {!isBundlePromo && (
+                      <div className="dp-item-quantity">
+                        <button className="dp-qty-btn" onClick={() => handleDecrement(item.id || i)}>-</button>
+                        <span className="dp-qty-val">{getQty(item.id || i)}</span>
+                        <button className="dp-qty-btn" onClick={() => handleIncrement(item.id || i)}>+</button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
+              {displayedItems.length === 0 && (
+                <div style={{ textAlign: 'center', color: '#888', fontStyle: 'italic', padding: '16px 0' }}>
+                  Tidak ada menu dalam bundle ini
+                </div>
+              )}
             </div>
 
             <div className="dp-detail-footer">
@@ -167,8 +221,8 @@ export default function PromoDetailModal({ promo, onClose, onAddToCart, onCartCl
                 onClick={() => {
                   if (onAddToCart) {
                     onAddToCart({
-                      id: promo.id || 'promo-' + Date.now(),
-                      name: promo.title || 'Promo Package',
+                      id: isBundlePromo ? `${promo.id}-${activeBundleId}` : (promo.id || 'promo-' + Date.now()),
+                      name: isBundlePromo ? `${promo.title || 'Promo Package'} - ${activeBundle?.name}` : (promo.title || 'Promo Package'),
                       price: finalTotal,
                       img: promo.image || imgBackground
                     }, 1);

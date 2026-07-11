@@ -1216,13 +1216,27 @@ const MenuSelectionModal = ({ isOpen, onClose, selectedMenus, onSave }) => {
   const [activeCategory, setActiveCategory] = useState("all menu");
   const [searchQuery, setSearchQuery] = useState("");
   const [localSelected, setLocalSelected] = useState(selectedMenus || []);
+  const [menus, setMenus] = useState([]);
 
-  const dummyMenus = [
-    { id: 1, name: 'creamy butterscoot latte', price: '55k', category: 'drink' },
-    { id: 2, name: 'chicken parmigiana', price: '65k', category: 'food' },
-    { id: 3, name: 'ice latte', price: '55k', category: 'drink' },
-    { id: 4, name: 'mie goreng spesial', price: '55k', category: 'food' },
-  ];
+  useEffect(() => {
+    if (isOpen) {
+      apiRequest('/api/menus')
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setMenus(data);
+          }
+        })
+        .catch((err) => console.error('Gagal mengambil menu:', err));
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLocalSelected(selectedMenus || []);
+      setSearchQuery("");
+      setActiveCategory("all menu");
+    }
+  }, [selectedMenus, isOpen]);
 
   const categories = ["all menu", "best seller", "drink", "food", "dessert & snack"];
 
@@ -1239,18 +1253,49 @@ const MenuSelectionModal = ({ isOpen, onClose, selectedMenus, onSave }) => {
     onClose();
   };
 
+  const formatPrice = (price) => {
+    if (typeof price === 'number') return `${(price / 1000)}k`;
+    return price;
+  };
+
+  const filteredMenus = menus.filter(menu => {
+    // Search filter
+    const nameMatch = (menu.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const descMatch = (menu.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    if (searchQuery && !nameMatch && !descMatch) return false;
+
+    // Category filter
+    if (activeCategory === "all menu") return true;
+    if (activeCategory === "best seller") {
+      return menu.bestSeller === true || menu.best_seller === true;
+    }
+    const cat = (menu.category || '').toLowerCase();
+    if (activeCategory === "drink") {
+      return ["drink", "kopi", "non-kopi"].includes(cat);
+    }
+    if (activeCategory === "food") {
+      return ["food", "makanan"].includes(cat);
+    }
+    if (activeCategory === "dessert & snack") {
+      return ["dessert", "snack", "dessert & snack"].includes(cat);
+    }
+    return true;
+  });
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-8 animate-modalIn">
-        <h2 className="text-2xl font-bold text-[#2E6A67] text-center mb-6">Tambah Menu</h2>
+        <h2 className="text-2xl font-bold text-[#2E6A67] text-center mb-6">Tambah Menu ke Bundle</h2>
         
         {/* Search */}
         <input 
           type="text" 
-          placeholder="Cari menu..." 
+          placeholder="Cari nama menu..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm mb-6 focus:outline-none focus:border-[#2E6A67]"
         />
 
@@ -1262,14 +1307,14 @@ const MenuSelectionModal = ({ isOpen, onClose, selectedMenus, onSave }) => {
               className={`px-4 py-1.5 text-xs rounded-full border font-semibold transition-colors ${activeCategory === cat ? 'bg-[#e8d8b4] text-gray-800 border-[#e8d8b4]' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
               onClick={() => setActiveCategory(cat)}
             >
-              {cat}
+              {cat === "all menu" ? "Semua Menu" : cat === "best seller" ? "Terlaris" : cat === "drink" ? "Minuman" : cat === "food" ? "Makanan" : "Dessert & Camilan"}
             </button>
           ))}
         </div>
 
         {/* Grid */}
         <div className="grid grid-cols-2 gap-4 max-h-[40vh] overflow-y-auto pr-2">
-          {dummyMenus.map(menu => {
+          {filteredMenus.map(menu => {
             const isSelected = localSelected.find(m => m.id === menu.id);
             return (
               <div 
@@ -1278,10 +1323,13 @@ const MenuSelectionModal = ({ isOpen, onClose, selectedMenus, onSave }) => {
                 className={`border rounded-lg p-4 flex justify-between items-center cursor-pointer transition-colors ${isSelected ? 'bg-[#2E6A67] text-white border-[#2E6A67]' : 'bg-white border-gray-200 text-gray-700 hover:border-[#2E6A67]'}`}
               >
                 <span className="font-medium text-sm">{menu.name}</span>
-                <span className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-[#ba8f65]'}`}>{menu.price}</span>
+                <span className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-[#ba8f65]'}`}>{formatPrice(menu.price)}</span>
               </div>
             );
           })}
+          {filteredMenus.length === 0 && (
+            <div className="col-span-2 text-center text-gray-400 py-6 text-sm">Tidak ada menu ditemukan</div>
+          )}
         </div>
 
         <div className="flex justify-end gap-6 mt-8">
@@ -1306,6 +1354,13 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
   const [selectedMenus, setSelectedMenus] = useState([]);
   const [showMenuSelection, setShowMenuSelection] = useState(false);
 
+  // New Bundle States
+  const [promoType, setPromoType] = useState('biasa'); // 'biasa' atau 'bundle'
+  const [bundles, setBundles] = useState([
+    { id: 'b-1', name: 'Bundle 1', price: '', items: [], isBundle: true }
+  ]);
+  const [activeBundleId, setActiveBundleId] = useState(null);
+
   useEffect(() => {
     if (promoToEdit) {
       setFormData({
@@ -1317,11 +1372,24 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
         endTime: promoToEdit.endTime || ''
       });
       setPreviewImage(promoToEdit.image || null);
-      setSelectedMenus(promoToEdit.items || []);
+      
+      const items = promoToEdit.items || [];
+      const isBundlePromo = items.length > 0 && items[0].isBundle === true;
+      if (isBundlePromo) {
+        setPromoType('bundle');
+        setBundles(items.map(b => ({ ...b, price: b.price || '' })));
+        setSelectedMenus([]);
+      } else {
+        setPromoType('biasa');
+        setSelectedMenus(items);
+        setBundles([{ id: 'b-1', name: 'Bundle 1', price: '', items: [], isBundle: true }]);
+      }
     } else {
       setFormData({ nama: '', diskon: '', durasi: '', deskripsi: '', startTime: '', endTime: '' });
       setPreviewImage(null);
+      setPromoType('biasa');
       setSelectedMenus([]);
+      setBundles([{ id: 'b-1', name: 'Bundle 1', price: '', items: [], isBundle: true }]);
     }
     setSelectedFile(null);
   }, [promoToEdit, isOpen]);
@@ -1336,6 +1404,49 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
       setSelectedFile(file);
       setPreviewImage(URL.createObjectURL(file));
     }
+  };
+
+  // Bundle operations
+  const addBundle = () => {
+    const nextNum = bundles.length + 1;
+    setBundles([...bundles, { id: `b-${Date.now()}`, name: `Bundle ${nextNum}`, price: '', items: [], isBundle: true }]);
+  };
+
+  const removeBundle = (id) => {
+    if (bundles.length === 1) {
+      alert("Minimal harus ada 1 bundle!");
+      return;
+    }
+    setBundles(bundles.filter(b => b.id !== id));
+  };
+
+  const handleBundleNameChange = (id, newName) => {
+    setBundles(prev => prev.map(b => b.id === id ? { ...b, name: newName } : b));
+  };
+
+  const handleBundlePriceChange = (id, newPrice) => {
+    setBundles(prev => prev.map(b => b.id === id ? { ...b, price: newPrice } : b));
+  };
+
+  const openMenuSelection = (bundleId) => {
+    setActiveBundleId(bundleId);
+    setShowMenuSelection(true);
+  };
+
+  const handleMenuSelectionSave = (menus) => {
+    if (promoType === 'biasa') {
+      setSelectedMenus(menus);
+    } else {
+      setBundles(prev => prev.map(b => b.id === activeBundleId ? { ...b, items: menus } : b));
+    }
+  };
+
+  const removeMenuFromBiasa = (menuId) => {
+    setSelectedMenus(selectedMenus.filter(m => m.id !== menuId));
+  };
+
+  const removeMenuFromBundle = (bundleId, menuId) => {
+    setBundles(prev => prev.map(b => b.id === bundleId ? { ...b, items: b.items.filter(m => m.id !== menuId) } : b));
   };
 
   const handleSubmit = async () => {
@@ -1363,7 +1474,7 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
         description: formData.deskripsi,
         startTime: formData.startTime || null,
         endTime: formData.endTime || null,
-        items: selectedMenus,
+        items: promoType === 'biasa' ? selectedMenus : bundles.map(b => ({ ...b, isBundle: true })),
         image: imageUrl,
         active: promoToEdit ? promoToEdit.active : true,
       };
@@ -1393,11 +1504,9 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
     setPreviewImage(null);
     setSelectedFile(null);
     setSelectedMenus([]);
+    setPromoType('biasa');
+    setBundles([{ id: 'b-1', name: 'Bundle 1', items: [], isBundle: true }]);
     onClose();
-  };
-
-  const removeMenu = (id) => {
-    setSelectedMenus(selectedMenus.filter(m => m.id !== id));
   };
 
   if (!isOpen) return null;
@@ -1417,6 +1526,7 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
               <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Nama Promo</label>
               <input
                 type="text" name="nama" value={formData.nama} onChange={handleChange}
+                placeholder="Contoh: Promo Weekend"
                 className="flex-1 bg-gray-100 rounded-md px-4 py-2 border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20"
               />
             </div>
@@ -1425,6 +1535,7 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
               <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Diskon</label>
               <input
                 type="text" name="diskon" value={formData.diskon} onChange={handleChange}
+                placeholder="Contoh: 10% atau 20k"
                 className="w-48 bg-gray-100 rounded-md px-4 py-2 border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20"
               />
             </div>
@@ -1457,6 +1568,7 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
               <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0 pt-2">Deskripsi</label>
               <textarea
                 name="deskripsi" value={formData.deskripsi} onChange={handleChange} rows={3}
+                placeholder="Deskripsi promo..."
                 className="flex-1 bg-gray-100 rounded-md px-4 py-2 border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20 resize-none"
               />
             </div>
@@ -1465,9 +1577,9 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
               <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0 pt-2">Poster Promo</label>
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="flex-1 bg-gray-100 rounded-md h-12 flex items-center px-4 cursor-pointer hover:bg-gray-200 overflow-hidden"
+                className="flex-1 bg-gray-100 rounded-md h-24 flex items-center justify-center px-4 cursor-pointer hover:bg-gray-200 overflow-hidden relative border border-dashed border-gray-300"
               >
-                {previewImage ? <img src={previewImage} className="h-full object-cover" /> : <span className="text-gray-400 text-xs">Klik untuk upload...</span>}
+                {previewImage ? <img src={previewImage} className="h-full object-cover w-full" /> : <span className="text-gray-400 text-xs">Klik untuk upload...</span>}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -1478,33 +1590,130 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
               </div>
             </div>
 
-            <div className="flex items-start gap-6">
-              <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0 pt-2">Menu Promo</label>
-              <div className="flex-1 flex flex-wrap gap-2 items-start">
-                {selectedMenus.map(menu => (
-                  <div key={menu.id} className="bg-gray-100 rounded-md px-3 py-1.5 flex items-center gap-2 text-xs font-medium text-gray-700">
-                    {menu.name}
-                    <button onClick={() => removeMenu(menu.id)} className="text-red-500 hover:text-red-700 rounded-full p-0.5">
-                      <X size={12} strokeWidth={3} />
-                    </button>
-                  </div>
-                ))}
-                {selectedMenus.length < 4 && (
-                  <div className="bg-gray-100 rounded-md px-4 py-1.5 min-w-[100px]"></div>
-                )}
-                {selectedMenus.length < 3 && (
-                  <div className="bg-gray-100 rounded-md px-4 py-1.5 min-w-[100px]"></div>
-                )}
-                <div className="w-full mt-2">
-                  <button 
-                    onClick={() => setShowMenuSelection(true)}
-                    className="w-8 h-8 bg-[#2E6A67] text-white rounded flex items-center justify-center hover:bg-[#245552] transition-colors"
-                  >
-                    <Plus size={18} strokeWidth={3} />
-                  </button>
-                </div>
+            {/* Tipe Promo Option */}
+            <div className="flex items-center gap-6">
+              <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Tipe Promo</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 text-sm cursor-pointer select-none text-gray-700">
+                  <input
+                    type="radio"
+                    name="promoType"
+                    value="biasa"
+                    checked={promoType === 'biasa'}
+                    onChange={() => setPromoType('biasa')}
+                    className="accent-[#2E6A67]"
+                  />
+                  Item Biasa
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer select-none text-gray-700">
+                  <input
+                    type="radio"
+                    name="promoType"
+                    value="bundle"
+                    checked={promoType === 'bundle'}
+                    onChange={() => setPromoType('bundle')}
+                    className="accent-[#2E6A67]"
+                  />
+                  Bundle Pilihan
+                </label>
               </div>
             </div>
+
+            {/* Conditionally Render Menu Selection based on Tipe Promo */}
+            {promoType === 'biasa' ? (
+              <div className="flex items-start gap-6 border-t pt-4">
+                <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0 pt-2">Menu Promo</label>
+                <div className="flex-1 flex flex-wrap gap-2 items-start">
+                  {selectedMenus.map(menu => (
+                    <div key={menu.id} className="bg-gray-100 rounded-md px-3 py-1.5 flex items-center gap-2 text-xs font-medium text-gray-700 border">
+                      {menu.name}
+                      <button onClick={() => removeMenuFromBiasa(menu.id)} className="text-red-500 hover:text-red-700 rounded-full p-0.5">
+                        <X size={12} strokeWidth={3} />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="w-full mt-2">
+                    <button 
+                      onClick={() => openMenuSelection(null)}
+                      className="px-3 py-1.5 bg-[#2E6A67] text-white text-xs rounded flex items-center gap-1 hover:bg-[#245552] transition-colors font-semibold"
+                    >
+                      <Plus size={14} strokeWidth={3} /> Pilih Menu
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="border-t pt-4 space-y-6">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-bold text-[#2E6A67]">Daftar Bundle Pilihan</h4>
+                  <button 
+                    onClick={addBundle}
+                    className="px-3 py-1 bg-[#2E6A67] text-white text-xs rounded hover:bg-[#245552] transition-colors font-semibold flex items-center gap-1"
+                  >
+                    <Plus size={14} /> Tambah Pilihan Bundle
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {bundles.map((bundle, index) => (
+                    <div key={bundle.id} className="bg-gray-50 border rounded-xl p-4 space-y-3 relative">
+                      <div className="flex flex-col gap-2 relative">
+                        <div className="flex justify-between items-center gap-4">
+                          <div className="flex-1 flex items-center gap-2">
+                            <span className="text-xs font-bold text-[#2E6A67] bg-[#2E6A67]/10 px-2 py-1 rounded">#{index + 1}</span>
+                            <input
+                              type="text"
+                              value={bundle.name}
+                              onChange={(e) => handleBundleNameChange(bundle.id, e.target.value)}
+                              placeholder="Nama Pilihan Bundle (cth: Paket A)"
+                              className="flex-1 bg-white border border-gray-200 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20 font-semibold text-gray-700"
+                            />
+                          </div>
+                          <button 
+                            onClick={() => removeBundle(bundle.id)}
+                            className="text-xs text-red-500 hover:text-red-700 font-semibold"
+                          >
+                            Hapus Pilihan
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2 pl-7">
+                          <span className="text-xs font-semibold text-gray-500">Harga:</span>
+                          <input
+                            type="text"
+                            value={bundle.price}
+                            onChange={(e) => handleBundlePriceChange(bundle.id, e.target.value)}
+                            placeholder="Harga Bundle (cth: 120.000 atau 120k)"
+                            className="w-48 bg-white border border-gray-200 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20 text-gray-700 font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 items-start pt-1">
+                        {bundle.items.map(menu => (
+                          <div key={menu.id} className="bg-white border rounded-md px-2.5 py-1.5 flex items-center gap-2 text-xs font-medium text-gray-600">
+                            {menu.name}
+                            <button onClick={() => removeMenuFromBundle(bundle.id, menu.id)} className="text-red-500 hover:text-red-700 rounded-full p-0.5">
+                              <X size={10} strokeWidth={3} />
+                            </button>
+                          </div>
+                        ))}
+                        {bundle.items.length === 0 && (
+                          <span className="text-xs text-gray-400 italic">Belum ada menu di bundle ini</span>
+                        )}
+                        <div className="w-full pt-1.5">
+                          <button 
+                            onClick={() => openMenuSelection(bundle.id)}
+                            className="px-2.5 py-1 bg-white border border-gray-300 text-gray-600 text-xs rounded hover:bg-gray-50 transition-colors font-medium flex items-center gap-1 shadow-sm"
+                          >
+                            <Plus size={12} /> Pilih Menu
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
@@ -1522,8 +1731,8 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
       <MenuSelectionModal 
         isOpen={showMenuSelection} 
         onClose={() => setShowMenuSelection(false)} 
-        selectedMenus={selectedMenus}
-        onSave={(menus) => setSelectedMenus(menus)}
+        selectedMenus={promoType === 'biasa' ? selectedMenus : (bundles.find(b => b.id === activeBundleId)?.items || [])}
+        onSave={handleMenuSelectionSave}
       />
     </div>
   );
