@@ -950,6 +950,7 @@ const TambahMenuModal = ({ isOpen, onClose, onCreated, menuToEdit, onUpdated }) 
     nama: '', kategori: '', harga: '', deskripsi: '', bestSeller: false, recommended: false
   });
   const [previewImage, setPreviewImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     if (menuToEdit) {
@@ -966,6 +967,7 @@ const TambahMenuModal = ({ isOpen, onClose, onCreated, menuToEdit, onUpdated }) 
       setFormData({ nama: '', kategori: '', harga: '', deskripsi: '', bestSeller: false, recommended: false });
       setPreviewImage(null);
     }
+    setSelectedFile(null);
   }, [menuToEdit, isOpen]);
 
   const handleChange = (e) => {
@@ -975,14 +977,32 @@ const TambahMenuModal = ({ isOpen, onClose, onCreated, menuToEdit, onUpdated }) 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedFile(file);
       setPreviewImage(URL.createObjectURL(file));
     }
   };
 
   const handleSubmit = async () => {
     try {
+      let imageUrl = menuToEdit?.image || null;
+
+      if (selectedFile) {
+        const formDataUpload = new FormData();
+        formDataUpload.append('image', selectedFile);
+        
+        const uploadRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/api/upload`, {
+          method: 'POST',
+          body: formDataUpload,
+        });
+        
+        if (!uploadRes.ok) throw new Error('Gagal upload gambar');
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.url;
+      }
+
       const payload = {
         ...formData,
+        image: imageUrl,
         bestSeller: formData.bestSeller,
         recommended: formData.recommended,
       };
@@ -1010,6 +1030,7 @@ const TambahMenuModal = ({ isOpen, onClose, onCreated, menuToEdit, onUpdated }) 
   const handleCancel = () => {
     setFormData({ nama: '', kategori: '', harga: '', deskripsi: '', bestSeller: false, recommended: false });
     setPreviewImage(null);
+    setSelectedFile(null);
     onClose();
   };
 
@@ -1281,6 +1302,7 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
     nama: '', diskon: '', durasi: '', deskripsi: '', startTime: '', endTime: ''
   });
   const [previewImage, setPreviewImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [selectedMenus, setSelectedMenus] = useState([]);
   const [showMenuSelection, setShowMenuSelection] = useState(false);
 
@@ -1301,6 +1323,7 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
       setPreviewImage(null);
       setSelectedMenus([]);
     }
+    setSelectedFile(null);
   }, [promoToEdit, isOpen]);
 
   const handleChange = (e) => {
@@ -1310,41 +1333,65 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedFile(file);
       setPreviewImage(URL.createObjectURL(file));
     }
   };
 
   const handleSubmit = async () => {
-    const payload = {
-      title: formData.nama,
-      discount: formData.diskon,
-      validUntil: formData.durasi,
-      description: formData.deskripsi,
-      startTime: formData.startTime || null,
-      endTime: formData.endTime || null,
-      items: selectedMenus,
-      active: promoToEdit ? promoToEdit.active : true,
-    };
+    try {
+      let imageUrl = promoToEdit?.image || null;
 
-    if (promoToEdit) {
-      const updated = await apiRequest(`/api/promo/${promoToEdit.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(payload),
-      });
-      onUpdated(updated);
-    } else {
-      const created = await apiRequest('/api/promo', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      onCreated(created);
+      if (selectedFile) {
+        const formDataUpload = new FormData();
+        formDataUpload.append('image', selectedFile);
+        
+        const uploadRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/api/upload`, {
+          method: 'POST',
+          body: formDataUpload,
+        });
+        
+        if (!uploadRes.ok) throw new Error('Gagal upload gambar promo');
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.url;
+      }
+
+      const payload = {
+        title: formData.nama,
+        discount: formData.diskon,
+        validUntil: formData.durasi,
+        description: formData.deskripsi,
+        startTime: formData.startTime || null,
+        endTime: formData.endTime || null,
+        items: selectedMenus,
+        image: imageUrl,
+        active: promoToEdit ? promoToEdit.active : true,
+      };
+
+      if (promoToEdit) {
+        const updated = await apiRequest(`/api/promo/${promoToEdit.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+        });
+        onUpdated(updated);
+      } else {
+        const created = await apiRequest('/api/promo', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        onCreated(created);
+      }
+      handleCancel();
+    } catch (err) {
+      console.error('Gagal menyimpan promo:', err);
+      alert('Gagal menyimpan promo');
     }
-    handleCancel();
   };
 
   const handleCancel = () => {
     setFormData({ nama: '', diskon: '', durasi: '', deskripsi: '', startTime: '', endTime: '' });
     setPreviewImage(null);
+    setSelectedFile(null);
     setSelectedMenus([]);
     onClose();
   };
@@ -1385,9 +1432,8 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
             <div className="flex items-center gap-6">
               <label className="w-32 text-sm font-bold text-[#2E6A67] flex-shrink-0">Durasi Promo</label>
               <input
-                type="text" name="durasi" value={formData.durasi} onChange={handleChange}
+                type="date" name="durasi" value={formData.durasi} onChange={handleChange}
                 className="w-48 bg-gray-100 rounded-md px-4 py-2 border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#2E6A67]/20"
-                placeholder="Contoh: 10/08/2026"
               />
             </div>
 

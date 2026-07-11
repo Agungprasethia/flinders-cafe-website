@@ -5,6 +5,7 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const { supabase } = require('./supabaseClient');
+const sharp = require('sharp');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,13 +19,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(UPLOADS_DIR));
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${uuidv4()}${ext}`);
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
@@ -651,10 +646,38 @@ app.post('/api/jadwal', async (req, res) => {
   }
 });
 
-app.post('/api/upload', upload.single('image'), (req, res) => {
+app.post('/api/upload', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'Tidak ada file yang diupload' });
-  const imageUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
-  res.json({ url: imageUrl, filename: req.file.filename });
+  
+  try {
+    const filename = `${uuidv4()}.webp`;
+    
+    // Compress and convert to webp using sharp
+    const compressedBuffer = await sharp(req.file.buffer)
+      .resize({ width: 800, withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toBuffer();
+
+    // Upload to Supabase bucket 'menu-images'
+    const { data, error } = await supabase.storage
+      .from('menu-images')
+      .upload(filename, compressedBuffer, {
+        contentType: 'image/webp',
+        upsert: false
+      });
+
+    if (error) throw error;
+
+    // Get public URL
+    const { data: publicData } = supabase.storage
+      .from('menu-images')
+      .getPublicUrl(filename);
+
+    res.json({ url: publicData.publicUrl, filename });
+  } catch (error) {
+    console.error('Error uploading image to Supabase:', error);
+    res.status(500).json({ message: 'Gagal mengupload dan mengkompresi gambar', error: error.message });
+  }
 });
 
 app.listen(PORT, () => {
