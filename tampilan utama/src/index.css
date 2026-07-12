@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
+@font-face {
+  font-family: 'The Seasons';
+  src: url('./assets/fonts/TheSeasons/Fontspring-DEMO-theseasons-reg.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'The Seasons';
+  src: url('./assets/fonts/TheSeasons/Fontspring-DEMO-theseasons-it.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'The Seasons';
+  src: url('./assets/fonts/TheSeasons/Fontspring-DEMO-theseasons-bd.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'The Seasons';
+  src: url('./assets/fonts/TheSeasons/Fontspring-DEMO-theseasons-bdit.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'The Seasons';
+  src: url('./assets/fonts/TheSeasons/Fontspring-DEMO-theseasons-lt.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'The Seasons';
+  src: url('./assets/fonts/TheSeasons/Fontspring-DEMO-theseasons-ltit.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+}

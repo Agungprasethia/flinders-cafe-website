@@ -1,0 +1,352 @@
+/* =====================
+   DetailPromo.css
+   ===================== */
+
+:root {
+  --teal: #39746c;
+  --teal-light: #4a9088;
+  --white: #ffffff;
+  --radius-lg: 35px;
+  --radius-md: 22px;
+  --radius-sm: 17px;
+}
+
+/* Overlay wrapper */
+.dp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Background */
+.dp-bg-blur {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.dp-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(2px);
+  transform: scale(1.05);
+}
+
+.dp-bg-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(30, 30, 30, 0.79);
+}
+
+/* ===== PROMO LIST VIEW ===== */
+.dp-promo-container {
+  position: relative;
+  z-index: 1;
+  width: 90%;
+  max-width: 1100px;
+  padding: 40px 0 20px;
+}
+
+.dp-promo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  padding: 0 8px;
+}
+
+.dp-promo-title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 900;
+  font-size: 64px;
+  color: var(--white);
+  letter-spacing: 8.96px;
+  margin: 0;
+  display: flex;
+  gap: 24px;
+}
+
+.dp-promo-month {
+  color: var(--white);
+  opacity: 0.9;
+}
+
+.dp-close-btn {
+  background: rgba(255,255,255,0.15);
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  color: var(--white);
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dp-close-btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.dp-promo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.dp-promo-card {
+  position: relative;
+  height: 380px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid var(--white);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dp-promo-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+}
+
+.dp-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.dp-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 20px 16px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.65));
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.dp-card-title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--white);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.dp-card-price {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--white);
+  background: var(--teal);
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+/* ===== DETAIL MODAL VIEW ===== */
+.dp-detail-modal {
+  position: relative;
+  z-index: 1;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 600px; /* Reduced width to match the taller/narrower look in the image */
+  padding: 32px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+}
+
+.dp-modal-content {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.dp-back-btn {
+  position: absolute;
+  top: -16px;
+  left: -16px;
+  width: 48px;
+  height: 48px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #000;
+  cursor: pointer;
+  z-index: 10;
+  padding: 0;
+  margin: 0;
+}
+
+.dp-detail-top {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.dp-detail-image-wrap {
+  flex: 1;
+  border-radius: 16px;
+  overflow: hidden;
+  height: 300px;
+  border: 4px solid #3f7466; /* Match dark teal border */
+  background: white;
+}
+
+.dp-detail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Scrollbar decoration */
+.dp-scrollbar-track {
+  width: 12px;
+  background: #cbd5e1;
+  border-radius: 12px;
+  height: 90%;
+  align-self: center;
+  position: relative;
+}
+
+.dp-scrollbar-thumb {
+  width: 100%;
+  height: 40%;
+  background: #94a3b8;
+  border-radius: 12px;
+  position: absolute;
+  top: 0;
+}
+
+.dp-detail-info {
+  padding: 0;
+}
+
+.dp-detail-title {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 400;
+  font-size: 32px;
+  color: #000;
+  margin: 0 0 12px;
+  letter-spacing: 0.5px;
+}
+
+.dp-detail-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 32px;
+}
+
+.dp-detail-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dp-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dp-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dp-item-name {
+  font-size: 20px;
+}
+
+.dp-item-name-italic {
+  font-family: 'Times New Roman', Times, serif;
+  font-style: italic;
+  color: #3f7466; /* dark teal */
+}
+
+.dp-item-name-bold {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: bold;
+  color: #b58d66; /* gold/brown */
+}
+
+.dp-item-price {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  color: #b58d66;
+  font-weight: 500;
+}
+
+.dp-item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dp-qty-btn {
+  background: #3f7466;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.dp-qty-val {
+  color: #3f7466;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.dp-detail-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 40px;
+}
+
+.dp-cart-btn {
+  background: #3f7466;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.dp-cart-btn:hover {
+  opacity: 0.9;
+}

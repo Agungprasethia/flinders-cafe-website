@@ -1,0 +1,235 @@
+/* =====================
+   MenuDetailModal.css
+   Matches Figma design
+   ===================== */
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.mdm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.mdm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(37, 51, 48, 0.85);
+  backdrop-filter: blur(4px);
+}
+
+.mdm-content {
+  position: relative;
+  z-index: 10000;
+  background: #ffffff;
+  border-radius: 28px;
+  width: 100%;
+  max-width: 480px;
+  padding: 28px 28px 32px;
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.35);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Custom scrollbar */
+.mdm-content::-webkit-scrollbar {
+  width: 5px;
+}
+.mdm-content::-webkit-scrollbar-thumb {
+  background-color: #39746c;
+  border-radius: 10px;
+}
+
+/* Back Button — styled like Figma (< arrow, top-left) */
+.mdm-back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: #ffffff;
+  border: none;
+  border-radius: 28px;
+  width: 48px;
+  height: 44px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  color: #1e1e1e;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  transition: background 0.2s, transform 0.15s;
+  z-index: 10;
+}
+
+.mdm-back-btn:hover {
+  background: #f0f0f0;
+  transform: scale(1.05);
+}
+
+/* Image */
+.mdm-image-wrap {
+  border: 4px solid #39746c;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 320px;
+  margin-top: 8px;
+}
+
+.mdm-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Info Section */
+.mdm-info {
+  padding: 0 4px;
+  margin-top: 20px;
+}
+
+.mdm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.mdm-name {
+  font-family: 'The Seasons', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 4px;
+  text-transform: lowercase;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.mdm-subtitle {
+  font-family: 'The Seasons', serif;
+  font-size: 16px;
+  color: #39746c;
+  margin: 0;
+  font-style: italic;
+  letter-spacing: 0.2px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.mdm-price {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  color: #000000;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mdm-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #444444;
+  line-height: 1.5;
+  margin: 0;
+  letter-spacing: 0.1px;
+}
+
+/* Actions Section */
+.mdm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.mdm-quantity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mdm-qty-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: #39746c;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mdm-qty-btn:hover {
+  background: #1d3b35;
+}
+
+.mdm-qty-value {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #000;
+  min-width: 12px;
+  text-align: center;
+}
+
+.mdm-cart-btn {
+  background: #39746c;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.mdm-cart-btn:hover {
+  background: #1d3b35;
+  transform: translateY(-2px);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 520px) {
+  .mdm-content {
+    max-width: 100%;
+    padding: 20px 20px 28px;
+    border-radius: 24px;
+  }
+
+  .mdm-image-wrap {
+    height: 240px;
+  }
+
+  .mdm-name {
+    font-size: 22px;
+  }
+
+  .mdm-price {
+    font-size: 22px;
+  }
+
+  .mdm-back-btn {
+    width: 40px;
+    height: 38px;
+    font-size: 20px;
+  }
+}
