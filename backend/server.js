@@ -682,7 +682,11 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Flinders Cafe Backend running at http://localhost:${PORT}`);
-  console.log(`Admin login: ${process.env.ADMIN_USERNAME || 'admin1'} / ${process.env.ADMIN_PASSWORD || 'admin123'}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Flinders Cafe Backend running at http://localhost:${PORT}`);
+    console.log(`Admin login: ${process.env.ADMIN_USERNAME || 'admin1'} / ${process.env.ADMIN_PASSWORD || 'admin123'}`);
+  });
+}
+
+module.exports = app;
