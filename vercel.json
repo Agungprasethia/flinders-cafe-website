@@ -1,4 +1,6 @@
 {
+  "buildCommand": "cd \"tampilan utama\" && npm install && npm run build",
+  "outputDirectory": "tampilan utama/dist",
   "rewrites": [
     {
       "source": "/(.*)",
