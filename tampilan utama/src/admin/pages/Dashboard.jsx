@@ -4,7 +4,7 @@ import {
   Plus, Edit2, Trash2, Eye, Star, LogOut, X, Upload, Image,
   ChevronLeft, ChevronRight, Minus, Calendar, Clock, Users, Phone, User
 } from 'lucide-react';
-import { apiRequest } from '../../lib/api';
+import { apiRequest, apiUrl } from '../../lib/api';
 
 // Hapus interface AdminDashboardProps
 export default function AdminDashboard({ onLogout }) {
@@ -996,7 +996,7 @@ const TambahMenuModal = ({ isOpen, onClose, onCreated, menuToEdit, onUpdated }) 
         const formDataUpload = new FormData();
         formDataUpload.append('image', selectedFile);
         
-        const uploadRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/api/upload`, {
+        const uploadRes = await fetch(apiUrl('/api/upload'), {
           method: 'POST',
           body: formDataUpload,
         });
@@ -1491,7 +1491,7 @@ const TambahPromoModal = ({ isOpen, onClose, onCreated, onUpdated, promoToEdit }
         const formDataUpload = new FormData();
         formDataUpload.append('image', selectedFile);
         
-        const uploadRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/api/upload`, {
+        const uploadRes = await fetch(apiUrl('/api/upload'), {
           method: 'POST',
           body: formDataUpload,
         });
