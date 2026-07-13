@@ -1,6 +1,6 @@
 import { IMAGES } from "../../../constants";
 
-export default function HeroSection({ lang, toggleLang, onReservasiClick, onMenuClick, onCartClick }) {
+export default function HeroSection({ lang, toggleLang, onReservasiClick, onMenuClick, onCartClick, pageConfig }) {
   const texts = {
     en: {
       menuBtn: "Our Menu",
@@ -21,7 +21,7 @@ export default function HeroSection({ lang, toggleLang, onReservasiClick, onMenu
       <img src={IMAGES.heroBg} alt="Hero Background" className="hero__bg" />
       <div className="hero__overlay" />
       <div className="hero__logo-center">
-        <img src={IMAGES.logo} alt="Flinders Cafe" className="hero__logo" />
+        <img src={pageConfig?.logo_cafe || IMAGES.logo} alt="Flinders Cafe" className="hero__logo" />
       </div>
       <div className="hero__cta-group">
         <button

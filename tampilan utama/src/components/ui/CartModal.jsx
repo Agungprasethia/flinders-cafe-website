@@ -3,7 +3,7 @@ import "./CartModal.css";
 import { IMAGES } from "../../constants";
 import { apiRequest } from "../../lib/api";
 
-export default function CartModal({ lang = "en", isOpen, onClose, items = [], setItems }) {
+export default function CartModal({ lang = "en", isOpen, onClose, items = [], setItems, pageConfig }) {
   const texts = {
     id: {
       title: "Keranjang Saya",
@@ -108,7 +108,14 @@ export default function CartModal({ lang = "en", isOpen, onClose, items = [], se
       }),
     }).catch(() => null);
 
-    const waUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(text)}`;
+    let targetWA = "6282146915670";
+    if (pageConfig?.whatsapp) {
+      targetWA = pageConfig.whatsapp.replace(/\D/g, '');
+      if (targetWA.startsWith('0')) {
+        targetWA = '62' + targetWA.substring(1);
+      }
+    }
+    const waUrl = `https://wa.me/${targetWA}?text=${encodeURIComponent(text)}`;
     window.open(waUrl, "_blank");
     onClose();
   };

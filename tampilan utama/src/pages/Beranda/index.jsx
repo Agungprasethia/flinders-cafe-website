@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Beranda.css";
 import Navbar from "../../components/common/Navbar";
 import HeroSection from "./sections/HeroSection";
@@ -8,8 +8,9 @@ import FlindersGallery from "../../components/ui/FlindersGallery";
 import AboutSection from "./sections/AboutSection";
 import DetailMenu from "../../components/ui/DetailMenu";
 import MenuDetailModal from "../../components/ui/MenuDetailModal";
+import { apiRequest } from "../../lib/api";
 
-export default function Beranda({ lang, toggleLang, onCartClick, onAddToCart }) {
+export default function Beranda({ lang, toggleLang, onCartClick, onAddToCart, pageConfig }) {
   const [showFullMenu, setShowFullMenu] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState(null);
 
@@ -31,6 +32,7 @@ export default function Beranda({ lang, toggleLang, onCartClick, onAddToCart }) 
         onReservasiClick={handleReservasiClick}
         onMenuClick={() => setShowFullMenu(true)}
         onCartClick={onCartClick}
+        pageConfig={pageConfig}
       />
       <MenuSection 
         lang={lang} 
@@ -38,9 +40,9 @@ export default function Beranda({ lang, toggleLang, onCartClick, onAddToCart }) 
         onAddToCart={onAddToCart}
         onCartClick={onCartClick}
       />
-      <ReservasiSection lang={lang} />
+      <ReservasiSection lang={lang} pageConfig={pageConfig} />
       <FlindersGallery lang={lang} />
-      <AboutSection lang={lang} />
+      <AboutSection lang={lang} pageConfig={pageConfig} />
 
       {/* Full Menu view for the "Menu" links */}
       {showFullMenu && <DetailMenu lang={lang} onClose={() => setShowFullMenu(false)} />}

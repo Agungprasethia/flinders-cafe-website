@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.admin-scope {
+  background-color: #F5F5F5;
+  color: #1f2937;
+  min-height: 100vh;
+}

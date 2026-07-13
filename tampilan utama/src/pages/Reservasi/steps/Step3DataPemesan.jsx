@@ -73,7 +73,7 @@ export default function Step3DataPemesan({
           <input
             type="text"
             className="reservasi-form__input"
-            placeholder="agung"
+            placeholder={lang === "id" ? "Nama Lengkap" : "Full Name"}
             value={formData.name}
             onChange={(e) =>
               onFormChange({ ...formData, name: e.target.value })

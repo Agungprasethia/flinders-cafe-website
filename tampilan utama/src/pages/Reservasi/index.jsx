@@ -47,7 +47,7 @@ function StepIndicator({ currentStep, lang = "en" }) {
   );
 }
 
-export default function ReservasiSection({ lang = "en" }) {
+export default function ReservasiSection({ lang = "en", pageConfig }) {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -109,6 +109,20 @@ export default function ReservasiSection({ lang = "en" }) {
       setIsSubmitting(false);
       setIsSuccess(true);
       setStep(4);
+      
+      let waText = lang === "id" 
+        ? `Halo Flinders Cafe, saya ingin reservasi meja:\n\nNama: ${formData.name}\nWhatsApp: ${formData.phone}\nTanggal: ${selectedDate}\nWaktu: ${selectedTime}\nJumlah Tamu: ${guestCount}\nCatatan: ${formData.notes || '-'}`
+        : `Hello Flinders Cafe, I would like to reserve a table:\n\nName: ${formData.name}\nWhatsApp: ${formData.phone}\nDate: ${selectedDate}\nTime: ${selectedTime}\nGuests: ${guestCount}\nNotes: ${formData.notes || '-'}`;
+        
+      let targetWA = "6282146915670";
+      if (pageConfig?.whatsapp) {
+        targetWA = pageConfig.whatsapp.replace(/\D/g, '');
+        if (targetWA.startsWith('0')) {
+          targetWA = '62' + targetWA.substring(1);
+        }
+      }
+      const waUrl = `https://wa.me/${targetWA}?text=${encodeURIComponent(waText)}`;
+      window.open(waUrl, "_blank");
     } catch (error) {
       setIsSubmitting(false);
       setSubmitError(error.message);

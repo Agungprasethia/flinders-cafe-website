@@ -4,7 +4,7 @@ import {
   Plus, Edit2, Trash2, Eye, Star, LogOut, X, Upload, Image,
   ChevronLeft, ChevronRight, Minus, Calendar, Clock, Users, Phone, User
 } from 'lucide-react';
-import { apiRequest } from '../lib/api';
+import { apiRequest } from '../../lib/api';
 
 // Hapus interface AdminDashboardProps
 export default function AdminDashboard({ onLogout }) {
